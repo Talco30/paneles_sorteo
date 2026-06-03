@@ -22,7 +22,7 @@
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
 h1,h2,h3{font-family:var(--font-head)}
 
-/* ── TOPBAR ── */
+/* == TOPBAR == */
 .topbar{background:var(--purple);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(83,74,183,0.3)}
 .topbar-title{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:-0.02em}
 .topbar-sub{font-size:12px;opacity:0.75;margin-top:1px}
@@ -31,26 +31,26 @@ h1,h2,h3{font-family:var(--font-head)}
 .nav-btn:hover{background:rgba(255,255,255,0.22)}
 .nav-btn.active{background:#fff;color:var(--purple)}
 
-/* ── LAYOUT ── */
+/* == LAYOUT == */
 .content{padding:20px;max-width:960px;margin:0 auto}
 
-/* ── STATS ── */
+/* == STATS == */
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:20px}
 .stat{background:var(--white);border-radius:var(--radius);padding:13px 15px;border:1px solid var(--gray-200);box-shadow:var(--shadow)}
 .stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
 .stat-val{font-family:var(--font-head);font-size:24px;font-weight:700;margin-top:3px}
 
-/* ── CARD ── */
+/* == CARD == */
 .card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--gray-200);padding:18px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
 .card-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .card-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--purple-light);flex-shrink:0}
 
-/* ── LEGEND ── */
+/* == LEGEND == */
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)}
 .dot{width:13px;height:13px;border-radius:4px;border:1px solid}
 
-/* ── GRID ── */
+/* == GRID == */
 .grid-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:5px;margin-bottom:14px;max-height:380px;overflow-y:auto;padding:2px}
 .boleto{aspect-ratio:1;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--gray-200);display:flex;align-items:center;justify-content:center;transition:all 0.12s;background:var(--white);color:var(--text);font-family:var(--font-head)}
 .boleto:hover:not(.vendido):not(.bloqueado):not(.seleccionado){background:var(--purple-light);border-color:var(--purple-mid);color:var(--purple-dark);transform:scale(1.08)}
@@ -62,11 +62,11 @@ h1,h2,h3{font-family:var(--font-head)}
 .grid-wrap::-webkit-scrollbar-track{background:var(--gray-100);border-radius:5px}
 .grid-wrap::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:5px}
 
-/* ── RANDOM ── */
+/* == RANDOM == */
 .random-sec{background:var(--gray-50);border-radius:var(--radius);padding:12px 14px;margin-top:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .random-sec span{font-size:13px;color:var(--text-muted)}
 
-/* ── FORM ── */
+/* == FORM == */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .form-row.full{grid-template-columns:1fr}
 .form-row.triple{grid-template-columns:1fr 1fr 1fr}
@@ -75,7 +75,7 @@ label{font-size:11px;font-weight:600;color:var(--text-muted);display:block;margi
 input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);background:var(--white);color:var(--text);font-size:14px;font-family:var(--font-body);transition:border-color 0.15s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,0.1)}
 
-/* ── BOTONES ── */
+/* == BOTONES == */
 .btn{padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all 0.15s;font-family:var(--font-head)}
 .btn-primary{background:var(--purple);color:#fff}
 .btn-primary:hover{background:var(--purple-dark);transform:translateY(-1px)}
@@ -88,14 +88,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple);
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
-/* ── ALERTS ── */
+/* == ALERTS == */
 .alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:10px;font-weight:500}
 .alert-ok{background:var(--teal-light);color:#085041;border:1px solid var(--teal-mid)}
 .alert-err{background:var(--red-light);color:var(--red);border:1px solid var(--red-mid)}
 .alert-info{background:var(--purple-light);color:var(--purple-dark);border:1px solid var(--purple-mid)}
 .alert-warn{background:var(--amber-light);color:#633806;border:1px solid var(--amber-mid)}
 
-/* ── BADGE ── */
+/* == BADGE == */
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--font-head)}
 .badge-verde{background:var(--teal-light);color:#085041}
 .badge-gris{background:var(--gray-100);color:var(--gray-600)}
@@ -104,7 +104,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple);
 .badge-amarillo{background:#FEF9C3;color:#713F12}
 .badge-dorado{background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000}
 
-/* ── TABLA ── */
+/* == TABLA == */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:9px 10px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1.5px solid var(--gray-200);font-family:var(--font-head)}
@@ -113,9 +113,9 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--gray-50)}
 .sep{height:1px;background:var(--gray-100);margin:16px 0}
 
-/* ══════════════════════════════════════════
+/* ========================================
    BILLETE DE LOTERÍA
-══════════════════════════════════════════ */
+======================================== */
 .billete-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
 .billete-wrap{background:var(--white);border-radius:20px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25);overflow:hidden;animation:slideUp 0.35s ease}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -141,15 +141,15 @@ tr:hover td{background:var(--gray-50)}
 .billete-close:hover{background:rgba(255,255,255,0.35)}
 .billete-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
 
-/* ══════════════════════════════════════════
+/* ========================================
    BUSCAR NÚMERO
-══════════════════════════════════════════ */
+======================================== */
 .buscar-wrap{display:flex;gap:8px;align-items:flex-end;margin-bottom:4px}
 .buscar-wrap input{flex:1}
 
-/* ══════════════════════════════════════════
+/* ========================================
    PAGOS
-══════════════════════════════════════════ */
+======================================== */
 .pago-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .pago-tab{padding:8px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-200);background:var(--white);color:var(--text-muted);font-family:var(--font-head);transition:all 0.15s}
 .pago-tab.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark)}
@@ -166,20 +166,20 @@ tr:hover td{background:var(--gray-50)}
 .pp-btn:hover{background:#001f5b}
 .pago-logo{font-size:18px}
 
-/* ── ADMIN LOGIN ── */
+/* == ADMIN LOGIN == */
 .login-wrap{max-width:360px;margin:48px auto}
 
-/* ── COMPROBANTE PREVIEW ── */
+/* == COMPROBANTE PREVIEW == */
 .comprobante-preview{width:100%;max-height:180px;object-fit:contain;border-radius:var(--radius);border:1px solid var(--gray-200);margin-top:8px;display:none}
 
-/* ── SORTEO RESULT ── */
+/* == SORTEO RESULT == */
 .ganadores-lista{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .gan-num{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000;font-family:var(--font-head);font-size:16px;font-weight:800;box-shadow:0 3px 10px rgba(240,165,0,0.35)}
 </style>
 </head>
 <body>
 
-<!-- ── TOPBAR ── -->
+<!-- == TOPBAR == -->
 <div class="topbar">
   <div>
     <div class="topbar-title" id="sorteo-nombre">Sorteo Demo</div>
@@ -192,7 +192,7 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ══════════════════ BILLETE MODAL ══════════════════ -->
+<!-- ================== BILLETE MODAL ================== -->
 <div class="billete-overlay" id="billete-modal" style="display:none" onclick="cerrarBillete(event)">
   <div class="billete-wrap" id="billete-inner">
     <div class="billete-header">
@@ -238,7 +238,7 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ══════════════════ PÁGINA PÚBLICA ══════════════════ -->
+<!-- ================== PÁGINA PÚBLICA ================== -->
 <div class="content" id="page-publico">
   <div class="stats-row" id="stats-publico"></div>
 
@@ -339,7 +339,7 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ══════════════════ PÁGINA BUSCAR ══════════════════ -->
+<!-- ================== PÁGINA BUSCAR ================== -->
 <div class="content" id="page-buscar" style="display:none">
   <div class="card">
     <div class="card-title"><div class="card-icon">🔍</div>Consultar mi boleto</div>
@@ -352,7 +352,7 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ══════════════════ PÁGINA ADMIN ══════════════════ -->
+<!-- ================== PÁGINA ADMIN ================== -->
 <div class="content" id="page-admin" style="display:none">
   <div id="admin-login" class="login-wrap">
     <div class="card">
@@ -390,6 +390,18 @@ tr:hover td{background:var(--gray-50)}
           </select>
         </div>
         <div><label>Números del sorteo por boleto</label><input type="number" id="cfg-nums-por-boleto" min="1" max="100" value="1"></div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Máximo de boletos públicos (0 = usar todo el rango)</label>
+          <input type="number" id="cfg-rango-publico" min="0" value="0" placeholder="Ej. 250">
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Ej: 250 → grilla muestra 000–249. El resto es rango reservado.</div>
+        </div>
+        <div>
+          <label>Números extras del rango reservado por boleto</label>
+          <input type="number" id="cfg-extras-reservado" min="0" value="0" placeholder="Ej. 3">
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Ej: 3 → cada boleto vendido recibe además 3 números del 250–999.</div>
+        </div>
       </div>
       <div class="form-row">
         <div><label>Fecha tentativa del sorteo</label><input type="date" id="cfg-fecha-sorteo"></div>
@@ -473,15 +485,17 @@ tr:hover td{background:var(--gray-50)}
 </div>
 
 <script>
-// ══════════════════════════════════════════
+// ==========================================
 //  ESTADO
-// ══════════════════════════════════════════
+// ==========================================
 let PASS_ADMIN = "admin123";
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
   sheetsUrl:"", banco:"", clabe:"", titular:"", mpLink:"", ppLink:"",
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
-  ganadores:[]
+  ganadores:[],
+  rangoPublicoMax: 0,   
+  extrasReservado: 0    
 };
 let boletos = {};
 let bloqueados = new Set();
@@ -489,9 +503,9 @@ let seleccionados = []; // array de boletos seleccionados (multi)
 let numerosAsignadosPorBoleto = {}; // {boleto: [nums]}
 let adminLogado = false;
 
-// ══════════════════════════════════════════
+// ==========================================
 //  PERSISTENCIA
-// ══════════════════════════════════════════
+// ==========================================
 function guardarEstado(){
   const bVendidos = {};
   for(const [k,v] of Object.entries(boletos)){
@@ -512,30 +526,50 @@ function cargarEstado(){
   }catch(e){}
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  INIT / HELPERS
-// ══════════════════════════════════════════
+// ==========================================
 function total(){ return Math.pow(10,cfg.digitos); }
 function pad(n){ return String(n).padStart(cfg.digitos,'0'); }
 
-function initBoletos(){
-  for(let i=0;i<total();i++){
+// Rango p?blico: cu?ntos boletos se muestran en la grilla al cliente
+function totalPublico(){
+  if(cfg.rangoPublicoMax>0) return Math.min(cfg.rangoPublicoMax, total());
+  return total();
+}
+// Rango reservado: n?meros que se asignan autom?ticamente (no visibles en grilla)
+function rangoReservadoDisponibles(excluir){
+  const inicio = totalPublico();
+  const fin = total();
+  const disponibles = [];
+  for(let i=inicio; i<fin; i++){
     const k=pad(i);
-    if(!boletos[k]) boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],fecha:'',pagado:false,comprobante:''};
+    if(!excluir.has(k)) disponibles.push(i);
+  }
+  return disponibles;
+}
+
+function initBoletos(){
+  // Solo inicializar el rango p?blico en el objeto boletos
+  const tp = totalPublico();
+  for(let i=0;i<tp;i++){
+    const k=pad(i);
+    if(!boletos[k]) boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:''};
   }
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  RENDER GRID
-// ══════════════════════════════════════════
+// ==========================================
 function renderGrid(){
   const g=document.getElementById('grid-boletos');
   const frag=document.createDocumentFragment();
-  for(let i=0;i<total();i++){
+  const tp=totalPublico();
+  for(let i=0;i<tp;i++){
     const k=pad(i);
     const b=boletos[k];
     let cls='boleto';
-    const esGanador=esNumGanador(b?.nums||[]);
+    const esGanador=esNumGanador(b?.nums||[],b?.numsExtra||[]);
     if(bloqueados.has(k)) cls+=' bloqueado';
     else if(b?.estado==='vendido') cls+= esGanador?' ganador':' vendido';
     else if(seleccionados.includes(k)) cls+=' seleccionado';
@@ -549,9 +583,10 @@ function renderGrid(){
   actualizarContadorSel();
 }
 
-function esNumGanador(nums){
+function esNumGanador(nums, numsExtra){
   if(!cfg.ganadores||!cfg.ganadores.length) return false;
-  return nums.some(n=>cfg.ganadores.includes(Number(n)));
+  const todos=[...(nums||[]),...(numsExtra||[])];
+  return todos.some(n=>cfg.ganadores.includes(Number(n)));
 }
 
 function actualizarContadorSel(){
@@ -582,25 +617,45 @@ function seleccionarBoleto(k){
 }
 
 function generarNumeros(k){
-  if(cfg.numsPorBoleto===1) return [parseInt(k,10)];
-  const t=total(), n=Math.min(cfg.numsPorBoleto,t);
-  const used=new Set(), pool=[];
-  while(pool.length<n){const r=Math.floor(Math.random()*t);if(!used.has(r)){used.add(r);pool.push(r);}}
-  pool.sort((a,b)=>a-b);
-  return pool;
+  // N?mero principal: el boleto elegido
+  const principal = parseInt(k, 10);
+  const nums = [principal];
+
+  // N?meros extra del rango reservado
+  if(cfg.extrasReservado > 0 && totalPublico() < total()){
+    // Calcular qu? n?meros del rango reservado ya est?n usados
+    const usadosReservado = new Set();
+    for(const [bk, bv] of Object.entries(boletos)){
+      if(bv.estado==='vendido'){
+        (bv.numsExtra||[]).forEach(n=>usadosReservado.add(n));
+      }
+    }
+    // Tambi?n excluir los que ya est?n en selecci?n actual (otros boletos de esta compra)
+    for(const sk of seleccionados){
+      if(sk!==k && numerosAsignadosPorBoleto[sk]){
+        // numsExtra est?n en el array completo despu?s del ?ndice 0 si numsPorBoleto=1
+        // En nuestro nuevo modelo se guardan en numsExtra separado
+      }
+    }
+    const disponiblesReservado = rangoReservadoDisponibles(usadosReservado);
+    const mezclados = [...disponiblesReservado].sort(()=>Math.random()-0.5);
+    const extras = mezclados.slice(0, cfg.extrasReservado);
+    return { principal: nums, extra: extras.sort((a,b)=>a-b) };
+  }
+  return { principal: nums, extra: [] };
 }
 
 function elegirAleatorio(){
   const cantidad=parseInt(document.getElementById('sel-cantidad-random').value)||1;
+  const tp=totalPublico();
   const disponibles=[];
-  for(let i=0;i<total();i++){
+  for(let i=0;i<tp;i++){
     const k=pad(i);
     if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)) disponibles.push(k);
   }
   if(!disponibles.length){alert('No hay boletos disponibles.');return;}
   const libresNecesarios=Math.min(cantidad, 10-seleccionados.length);
   if(libresNecesarios<=0){setAlert('alert-compra','Ya tienes 10 boletos seleccionados.','warn');return;}
-  // Mezclar y tomar los primeros N
   const mezclados=[...disponibles].sort(()=>Math.random()-0.5);
   const elegidos=mezclados.slice(0,libresNecesarios);
   elegidos.forEach(k=>{
@@ -612,18 +667,24 @@ function elegirAleatorio(){
   document.querySelector('.boleto.seleccionado')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
+function getNums(k){ return (numerosAsignadosPorBoleto[k]||{principal:[parseInt(k,10)],extra:{}}).principal||[parseInt(k,10)]; }
+function getExtra(k){ return (numerosAsignadosPorBoleto[k]||{extra:[]}).extra||[]; }
+
 function actualizarFormCompra(){
   const fc=document.getElementById('form-compra');
   if(seleccionados.length===0){fc.style.display='none';return;}
   fc.style.display='block';
   const total_pagar=seleccionados.length*cfg.precio;
-  // Construir resumen de boletos
+  const tieneExtras=cfg.extrasReservado>0 && totalPublico()<total();
   let resumenHtml=seleccionados.map(k=>{
-    const nums=numerosAsignadosPorBoleto[k]||[];
-    const numsStr=cfg.numsPorBoleto===1?nums[0]:nums.join(', ');
+    const principal=getNums(k);
+    const extra=getExtra(k);
+    const extraHtml=tieneExtras&&extra.length>0
+      ?`<span style="color:var(--teal);font-size:11px"> + extras: ${extra.map(n=>pad(n)).join(', ')}</span>`
+      :'';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--gray-200);font-size:13px">
       <span>Boleto <strong>${k}</strong></span>
-      <span style="color:var(--text-muted);font-size:12px">${cfg.numsPorBoleto===1?'Núm:':'Núms:'} ${numsStr}</span>
+      <span style="color:var(--text-muted);font-size:12px">Núm: ${principal.map(n=>pad(n)).join(', ')}${extraHtml}</span>
     </div>`;
   }).join('');
   document.getElementById('numeros-asignados').innerHTML=`
@@ -632,8 +693,8 @@ function actualizarFormCompra(){
         ${seleccionados.length} boleto${seleccionados.length>1?'s':''} seleccionado${seleccionados.length>1?'s':''} — Total: <span style="color:var(--purple)">$${total_pagar.toLocaleString('es-MX')} MXN</span>
       </div>
       ${resumenHtml}
+      ${tieneExtras?`<div style="font-size:11px;color:var(--teal);margin-top:6px">✓ Incluye ${cfg.extrasReservado} número${cfg.extrasReservado>1?'s':''} extra del rango reservado por boleto</div>`:''}
     </div>`;
-  // Datos transferencia
   document.getElementById('tf-banco').textContent=cfg.banco||'—';
   document.getElementById('tf-clabe').textContent=cfg.clabe||'—';
   document.getElementById('tf-titular').textContent=cfg.titular||'—';
@@ -654,9 +715,9 @@ function cancelarSeleccion(){
   limpiarSeleccion();
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  PAGO TABS
-// ══════════════════════════════════════════
+// ==========================================
 function selectPagoTab(id, btn){
   document.querySelectorAll('.pago-tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.pago-panel').forEach(p=>p.classList.remove('active'));
@@ -667,9 +728,9 @@ function selectPagoTab(id, btn){
 function registrarPagoMP(){ if(!validarDatosCompra()) return false; }
 function registrarPagoPP(){ if(!validarDatosCompra()) return false; }
 
-// ══════════════════════════════════════════
-//  CONFIRMAR COMPRA → BILLETE
-// ══════════════════════════════════════════
+// ==========================================
+//  CONFIRMAR COMPRA ? BILLETE
+// ==========================================
 function validarDatosCompra(){
   const nombre=document.getElementById('inp-nombre').value.trim();
   const tel=document.getElementById('inp-tel').value.trim();
@@ -684,58 +745,55 @@ async function confirmarCompra(){
   const email=document.getElementById('inp-email').value.trim();
   const fecha=new Date().toLocaleString('es-MX');
   const boletosCopia=[...seleccionados];
-  // Registrar cada boleto
   for(const k of boletosCopia){
-    const nums=numerosAsignadosPorBoleto[k]||[];
-    boletos[k]={estado:'vendido',nombre,tel,email,nums,fecha,pagado:false,comprobante:''};
-    await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,nums:nums.join(', '),fecha});
+    const principal=getNums(k);
+    const extra=getExtra(k);
+    boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:''};
+    await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
+      nums:principal.map(n=>pad(n)).join(', '),
+      numsExtra:extra.map(n=>pad(n)).join(', '),
+      fecha});
   }
   guardarEstado(); renderGrid(); renderStats();
   if(adminLogado) renderAdmin();
   document.getElementById('inp-nombre').value='';
   document.getElementById('inp-tel').value='';
   document.getElementById('inp-email').value='';
-  // Guardar para mostrar billete(s)
-  const primerok=boletosCopia[0];
   seleccionados=[]; numerosAsignadosPorBoleto={};
   document.getElementById('form-compra').style.display='none';
   setAlert('alert-compra','','');
-  // Si compró varios, mostrar el primero (el billete incluye todos)
   mostrarBilleteMultiple(boletosCopia, nombre, tel, email, fecha);
 }
 
-// Billete para compra de múltiples boletos (se muestra al confirmar)
+// Billete para compra de m?ltiples boletos (se muestra al confirmar)
 function mostrarBilleteMultiple(keys, nombre, tel, email, fecha){
-  // Usamos el primer boleto como referencia del billete
-  // pero mostramos todos los boletos en el modal
-  const esGan=keys.some(k=>esNumGanador(boletos[k]?.nums||[]));
+  const esGan=keys.some(k=>esNumGanador(boletos[k]?.nums||[], boletos[k]?.numsExtra||[]));
   const totalPagar=keys.length*cfg.precio;
+  const tieneExtras=cfg.extrasReservado>0 && totalPublico()<total();
   document.getElementById('blt-sorteo-nombre').textContent=(cfg.nombre||'SORTEO').toUpperCase();
   document.getElementById('blt-header-sub').textContent=`${keys.length} boleto${keys.length>1?'s':''} — Comprobante de participación`;
   document.getElementById('blt-num-grande').textContent=keys.length===1?keys[0]:`×${keys.length}`;
-  // Números: mostrar todos los boletos con sus números
   const numsDiv=document.getElementById('blt-nums');
   numsDiv.innerHTML=keys.map(k=>{
     const nums=boletos[k]?.nums||[];
-    return `<div style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px dashed var(--gray-200);font-size:12px">
-      <span style="font-family:var(--font-head);font-weight:700">Boleto ${k}</span>
-      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end">
-        ${nums.map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}">${String(n).padStart(cfg.digitos,'0')}</div>`;}).join('')}
+    const extra=boletos[k]?.numsExtra||[];
+    const numsHtml=nums.map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}">${pad(n)}</div>`;}).join('');
+    const extraHtml=extra.map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}" style="background:#E1F5EE;color:#085041" title="Extra">${pad(n)}</div>`;}).join('');
+    return `<div style="width:100%;padding:4px 0;border-bottom:1px dashed var(--gray-200)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-family:var(--font-head);font-weight:700;font-size:12px">Boleto ${k}</span>
+        ${tieneExtras&&extra.length?`<span style="font-size:10px;color:var(--teal)">+${extra.length} extras</span>`:''}
       </div>
+      <div style="display:flex;gap:3px;flex-wrap:wrap">${numsHtml}${extraHtml}</div>
     </div>`;
   }).join('');
   document.getElementById('blt-nombre').textContent=nombre;
-  document.getElementById('blt-total').textContent=`$${totalPagar.toLocaleString('es-MX')} MXN (${keys.length} × $${cfg.precio.toLocaleString('es-MX')})`;
+  document.getElementById('blt-total').textContent=`$${totalPagar.toLocaleString('es-MX')} MXN${keys.length>1?` (${keys.length} × $${cfg.precio.toLocaleString('es-MX')})`:''}`;
   document.getElementById('blt-fecha').textContent=fecha;
   let fs='Por definir';
-  if(cfg.fechaSorteo){
-    const d=new Date(cfg.fechaSorteo+'T12:00:00');
-    fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  }
+  if(cfg.fechaSorteo){const d=new Date(cfg.fechaSorteo+'T12:00:00');fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
   document.getElementById('blt-fecha-sorteo').innerHTML=`${fs}<br><span style="font-size:11px;font-weight:400;color:var(--text-muted)">${cfg.notaFecha||''}</span>`;
-  // Status pago: pendiente siempre al inicio
   document.getElementById('blt-status-pago').innerHTML='<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
-  // Ganador
   const ganDiv=document.getElementById('blt-status-ganador');
   if(cfg.ganadores&&cfg.ganadores.length>0){
     ganDiv.innerHTML=esGan?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>':'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Estos boletos no resultaron ganadores</div>';
@@ -744,45 +802,39 @@ function mostrarBilleteMultiple(keys, nombre, tel, email, fecha){
   document.getElementById('billete-modal').style.display='flex';
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  BILLETE MODAL (buscar un boleto individual)
-// ══════════════════════════════════════════
+// ==========================================
 function mostrarBillete(k){
   const b=boletos[k];
   if(!b||b.estado!=='vendido'){setAlert('alert-buscar','Boleto no registrado o no vendido.','err');return;}
-  const esGan=esNumGanador(b.nums||[]);
+  const esGan=esNumGanador(b.nums||[], b.numsExtra||[]);
+  const tieneExtras=(b.numsExtra||[]).length>0;
   document.getElementById('blt-sorteo-nombre').textContent=(cfg.nombre||'SORTEO').toUpperCase();
   document.getElementById('blt-header-sub').textContent='Comprobante de participación';
   document.getElementById('blt-num-grande').textContent=k;
-  // Números
   const numsDiv=document.getElementById('blt-nums');
-  numsDiv.innerHTML=(b.nums||[]).map(n=>{
-    const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));
-    return `<div class="billete-num${esG?' ganador-num':''}">${String(n).padStart(cfg.digitos,'0')}</div>`;
-  }).join('');
+  const numsHtml=(b.nums||[]).map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}">${pad(n)}</div>`;}).join('');
+  const extraHtml=(b.numsExtra||[]).map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}" style="background:#E1F5EE;color:#085041" title="Número extra">${pad(n)}</div>`;}).join('');
+  numsDiv.innerHTML=`<div style="width:100%">
+    <div style="display:flex;gap:4px;flex-wrap:wrap">${numsHtml}</div>
+    ${tieneExtras?`<div style="margin-top:6px"><span style="font-size:10px;color:var(--teal);font-weight:700;font-family:var(--font-head)">EXTRAS:</span><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${extraHtml}</div></div>`:''}
+  </div>`;
   document.getElementById('blt-nombre').textContent=b.nombre;
   document.getElementById('blt-total').textContent=`$${cfg.precio.toLocaleString('es-MX')} MXN`;
   document.getElementById('blt-fecha').textContent=b.fecha;
-  // Fecha sorteo
   let fs='Por definir';
-  if(cfg.fechaSorteo){
-    const d=new Date(cfg.fechaSorteo+'T12:00:00');
-    fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  }
-  document.getElementById('blt-fecha-sorteo').innerHTML=
-    `${fs}<br><span style="font-size:11px;font-weight:400;color:var(--text-muted)">${cfg.notaFecha||''}</span>`;
-  // Status pago
+  if(cfg.fechaSorteo){const d=new Date(cfg.fechaSorteo+'T12:00:00');fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
+  document.getElementById('blt-fecha-sorteo').innerHTML=`${fs}<br><span style="font-size:11px;font-weight:400;color:var(--text-muted)">${cfg.notaFecha||''}</span>`;
   document.getElementById('blt-status-pago').innerHTML=b.pagado
     ?'<div class="billete-status-pagado">✅ Pago confirmado</div>'
     :'<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
-  // Ganador
   const ganDiv=document.getElementById('blt-status-ganador');
   if(cfg.ganadores&&cfg.ganadores.length>0){
     ganDiv.innerHTML=esGan
       ?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>'
       :'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Este boleto no resultó ganador</div>';
   } else ganDiv.innerHTML='';
-  // Comprobante
   const cw=document.getElementById('blt-comprobante-wrap');
   const ci=document.getElementById('blt-comprobante-img');
   if(b.comprobante){cw.style.display='block';ci.src=b.comprobante;}
@@ -824,20 +876,20 @@ function imprimirBillete(){
   setTimeout(()=>w.print(),600);
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  BUSCAR BOLETO
-// ══════════════════════════════════════════
+// ==========================================
 function buscarBoleto(){
   const val=document.getElementById('inp-buscar').value.trim();
   if(!val){setAlert('alert-buscar','Ingresa un número.','err');return;}
-  // Buscar por número de boleto
+  // Buscar por n?mero de boleto
   const k=val.padStart(cfg.digitos,'0');
   if(boletos[k]&&boletos[k].estado==='vendido'){
     mostrarBillete(k);
     setAlert('alert-buscar','','');
     return;
   }
-  // Buscar por número del sorteo asignado
+  // Buscar por n?mero del sorteo asignado
   const num=parseInt(val,10);
   const encontrado=Object.entries(boletos).find(([,b])=>b.estado==='vendido'&&(b.nums||[]).includes(num));
   if(encontrado){
@@ -848,17 +900,19 @@ function buscarBoleto(){
   setAlert('alert-buscar','No se encontró ningún boleto con ese número.','err');
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  STATS
-// ══════════════════════════════════════════
+// ==========================================
 function renderStats(){
-  const tot=total();
+  const tot=totalPublico();
   const vend=Object.values(boletos).filter(b=>b.estado==='vendido').length;
   const libres=tot-vend-bloqueados.size;
+  const tieneReservado=cfg.rangoPublicoMax>0 && totalPublico()<total();
   document.getElementById('stats-publico').innerHTML=`
     <div class="stat"><div class="stat-label">Disponibles</div><div class="stat-val">${libres.toLocaleString('es-MX')}</div></div>
     <div class="stat"><div class="stat-label">Vendidos</div><div class="stat-val">${vend.toLocaleString('es-MX')}</div></div>
     <div class="stat"><div class="stat-label">Total boletos</div><div class="stat-val">${tot.toLocaleString('es-MX')}</div></div>
+    ${tieneReservado?`<div class="stat"><div class="stat-label">Cobertura</div><div class="stat-val" style="font-size:16px">${Math.round(vend*(1+cfg.extrasReservado)/total()*100)}%</div></div>`:''}
   `;
   if(adminLogado){
     const pag=Object.values(boletos).filter(b=>b.estado==='vendido'&&b.pagado).length;
@@ -868,13 +922,14 @@ function renderStats(){
       <div class="stat"><div class="stat-label">Pendientes</div><div class="stat-val" style="color:var(--amber)">${vend-pag}</div></div>
       <div class="stat"><div class="stat-label">Recaudado</div><div class="stat-val">$${(pag*cfg.precio).toLocaleString('es-MX')}</div></div>
       <div class="stat"><div class="stat-label">Bloqueados</div><div class="stat-val">${bloqueados.size}</div></div>
+      ${tieneReservado?`<div class="stat"><div class="stat-label">Cobertura total</div><div class="stat-val" style="font-size:16px">${Math.round(vend*(1+cfg.extrasReservado)/total()*100)}%</div></div>`:''}
     `;
   }
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  ADMIN RENDER
-// ══════════════════════════════════════════
+// ==========================================
 function renderAdmin(){
   renderStats();
   const vendidos=Object.entries(boletos).filter(([,b])=>b.estado==='vendido');
@@ -915,6 +970,8 @@ function loadConfigUI(){
   document.getElementById('cfg-precio').value=cfg.precio;
   document.getElementById('cfg-digitos').value=cfg.digitos;
   document.getElementById('cfg-nums-por-boleto').value=cfg.numsPorBoleto;
+  document.getElementById('cfg-rango-publico').value=cfg.rangoPublicoMax||0;
+  document.getElementById('cfg-extras-reservado').value=cfg.extrasReservado||0;
   document.getElementById('cfg-sheets-url').value=cfg.sheetsUrl;
   document.getElementById('cfg-banco').value=cfg.banco||'';
   document.getElementById('cfg-clabe').value=cfg.clabe||'';
@@ -927,9 +984,9 @@ function loadConfigUI(){
     document.getElementById('cfg-ganadores').value=cfg.ganadores.join(', ');
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  COMPROBANTE
-// ══════════════════════════════════════════
+// ==========================================
 function subirComprobante(k, input){
   const file=input.files[0];
   if(!file) return;
@@ -949,9 +1006,9 @@ function togglePago(k, val){
   enviarSheets({accion:'pago',boleto:k,pagado:val,fecha:new Date().toLocaleString('es-MX')});
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  GANADORES
-// ══════════════════════════════════════════
+// ==========================================
 function guardarGanadores(){
   const raw=document.getElementById('cfg-ganadores').value.trim();
   if(!raw){setAlert('alert-ganadores','Ingresa al menos un número ganador.','err');return;}
@@ -967,9 +1024,9 @@ function renderGanadoresList(){
   div.innerHTML=cfg.ganadores.map(n=>`<div class="gan-num">${String(n).padStart(cfg.digitos,'0')}</div>`).join('');
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  CONFIG
-// ══════════════════════════════════════════
+// ==========================================
 function guardarConfig(){
   const nuevaPass=document.getElementById('cfg-pass-nueva').value.trim();
   if(nuevaPass) PASS_ADMIN=nuevaPass;
@@ -979,6 +1036,8 @@ function guardarConfig(){
   cfg.precio=parseInt(document.getElementById('cfg-precio').value)||100;
   cfg.digitos=nuevoDigitos;
   cfg.numsPorBoleto=Math.min(parseInt(document.getElementById('cfg-nums-por-boleto').value)||1,total());
+  cfg.rangoPublicoMax=parseInt(document.getElementById('cfg-rango-publico').value)||0;
+  cfg.extrasReservado=parseInt(document.getElementById('cfg-extras-reservado').value)||0;
   cfg.sheetsUrl=document.getElementById('cfg-sheets-url').value.trim();
   cfg.banco=document.getElementById('cfg-banco').value.trim();
   cfg.clabe=document.getElementById('cfg-clabe').value.trim();
@@ -1011,9 +1070,9 @@ function reiniciarTodo(){
   setAlert('alert-cfg','Todo reiniciado.','warn');
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  BLOQUEOS
-// ══════════════════════════════════════════
+// ==========================================
 function bloquearBoleto(){
   const n=document.getElementById('inp-bloqueo-num').value.trim().padStart(cfg.digitos,'0');
   if(!boletos[n]){setAlert('alert-bloqueo','Número no existe.','err');return;}
@@ -1037,9 +1096,9 @@ function eliminarVenta(k){
   enviarSheets({accion:'cancelacion',boleto:k,fecha:new Date().toLocaleString('es-MX')});
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  SHEETS
-// ══════════════════════════════════════════
+// ==========================================
 async function enviarSheets(data){
   if(!cfg.sheetsUrl) return;
   try{
@@ -1052,9 +1111,9 @@ async function enviarSheets(data){
   }
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  EXPORT CSV
-// ══════════════════════════════════════════
+// ==========================================
 function exportarCSV(){
   const vend=Object.entries(boletos).filter(([,b])=>b.estado==='vendido');
   if(!vend.length) return;
@@ -1070,9 +1129,9 @@ function exportarCSV(){
   a.click();
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  LOGIN / NAV
-// ══════════════════════════════════════════
+// ==========================================
 function loginAdmin(){
   if(document.getElementById('inp-pass').value===PASS_ADMIN){
     adminLogado=true;
@@ -1101,9 +1160,9 @@ function setAlert(id,msg,type){
   el.innerHTML=`<div class="alert ${cls}">${msg}</div>`;
 }
 
-// ══════════════════════════════════════════
+// ==========================================
 //  ARRANQUE
-// ══════════════════════════════════════════
+// ==========================================
 cargarEstado();
 initBoletos();
 renderGrid();
