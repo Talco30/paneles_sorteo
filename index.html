@@ -567,6 +567,51 @@ function cargarEstado(){
 // ==========================================
 function total(){ return Math.pow(10,cfg.digitos); }
 function pad(n){ return String(n).padStart(cfg.digitos,'0'); }
+function normalizarNumeroId(valor){
+  const txt=String(valor ?? '').trim();
+  const match=txt.match(/\d+/);
+  if(!match) return '';
+  return String(parseInt(match[0],10));
+}
+function agregarNumerosASet(valor,set){
+  if(valor===undefined||valor===null) return;
+  if(Array.isArray(valor)){
+    valor.forEach(v=>agregarNumerosASet(v,set));
+    return;
+  }
+  const matches=String(valor).match(/\d+/g)||[];
+  matches.forEach(v=>{
+    const key=normalizarNumeroId(v);
+    if(key!=='') set.add(key);
+  });
+}
+function obtenerNumerosVendidosAsignadosLocal(){
+  // Incluye TODO número ya entregado en una venta activa:
+  // boleto principal + números asignados + extras.
+  const usados=new Set();
+  for(const [bk,bv] of Object.entries(boletos)){
+    if(bv && bv.estado==='vendido'){
+      agregarNumerosASet(bk,usados);
+      agregarNumerosASet(bv.nums,usados);
+      agregarNumerosASet(bv.numsExtra,usados);
+    }
+  }
+  return usados;
+}
+function obtenerNumerosSeleccionadosActuales(){
+  const usados=new Set();
+  for(const sk of seleccionados){
+    agregarNumerosASet(sk,usados);
+    if(numerosAsignadosPorBoleto[sk]){
+      agregarNumerosASet(numerosAsignadosPorBoleto[sk].principal,usados);
+      agregarNumerosASet(numerosAsignadosPorBoleto[sk].extra,usados);
+    }
+  }
+  return usados;
+}
+function numeroYaEntregadoLocal(k){
+  return obtenerNumerosVendidosAsignadosLocal().has(normalizarNumeroId(k));
+}
 function whatsappDisplay(){ return (cfg.whatsappPago||'').trim() || 'WhatsApp del administrador'; }
 function whatsappUrl(){
   let n=(cfg.whatsappPago||'').replace(/\D/g,'');
@@ -603,7 +648,7 @@ function rangoReservadoDisponibles(excluir){
   const fin = total();
   const disponibles = [];
   for(let i=inicio; i<fin; i++){
-    const k=pad(i);
+    const k=normalizarNumeroId(i);
     if(!excluir.has(k)) disponibles.push(i);
   }
   return disponibles;
@@ -625,16 +670,19 @@ function renderGrid(){
   const g=document.getElementById('grid-boletos');
   const frag=document.createDocumentFragment();
   const tp=totalPublico();
+  const numerosYaEntregados=obtenerNumerosVendidosAsignadosLocal();
   for(let i=0;i<tp;i++){
     const k=pad(i);
     const b=boletos[k];
     let cls='boleto';
     const esGanador=esNumGanador(b?.nums||[],b?.numsExtra||[]);
+    const usadoComoNumeroAsignado=numerosYaEntregados.has(normalizarNumeroId(k));
     if(bloqueados.has(k)) cls+=' bloqueado';
     else if(b?.estado==='vendido') cls+= esGanador?' ganador':' vendido';
+    else if(usadoComoNumeroAsignado) cls+=' bloqueado';
     else if(seleccionados.includes(k)) cls+=' seleccionado';
     const btn=document.createElement('button');
-    btn.className=cls; btn.textContent=k; btn.title=k;
+    btn.className=cls; btn.textContent=k; btn.title=(usadoComoNumeroAsignado && b?.estado!=='vendido')?'Número ya asignado':k;
     btn.onclick=()=>seleccionarBoleto(k);
     frag.appendChild(btn);
   }
@@ -666,39 +714,52 @@ function seleccionarBoleto(k){
     seleccionados.splice(idx,1);
     delete numerosAsignadosPorBoleto[k];
   } else {
+    if(numeroYaEntregadoLocal(k)){
+      setAlert('alert-compra',`El número ${k} ya fue asignado en otro boleto y no puede repetirse.`,'err');
+      renderGrid();
+      return;
+    }
     if(seleccionados.length>=10){
       setAlert('alert-compra','Máximo 10 boletos por compra.','warn');
       return;
     }
-    seleccionados.push(k);
-    numerosAsignadosPorBoleto[k]=generarNumeros(k);
+    try{
+      const generados=generarNumeros(k);
+      seleccionados.push(k);
+      numerosAsignadosPorBoleto[k]=generados;
+    }catch(e){
+      setAlert('alert-compra',e.message||'No hay suficientes números únicos disponibles.','err');
+      return;
+    }
   }
   renderGrid();
   actualizarFormCompra();
 }
 
 function generarNumeros(k){
-  // N?mero principal: el boleto elegido
+  // Número principal: el boleto elegido.
   const principal = parseInt(k, 10);
   const nums = [principal];
 
-  // N?meros extra del rango reservado
+  // Regla crítica: ningún número puede repetirse.
+  // Se excluyen todos los números ya vendidos/asignados y también los que
+  // ya están temporalmente seleccionados en esta misma compra.
+  const usados = obtenerNumerosVendidosAsignadosLocal();
+  const usadosSeleccion = obtenerNumerosSeleccionadosActuales();
+  usadosSeleccion.forEach(n=>usados.add(n));
+
+  const principalKey=normalizarNumeroId(principal);
+  if(usados.has(principalKey)){
+    throw new Error(`El número ${pad(principal)} ya fue asignado y no puede repetirse.`);
+  }
+  usados.add(principalKey);
+
+  // Números extra del rango reservado.
   if(cfg.extrasReservado > 0 && totalPublico() < total()){
-    // Calcular qu? n?meros del rango reservado ya est?n usados
-    const usadosReservado = new Set();
-    for(const [bk, bv] of Object.entries(boletos)){
-      if(bv.estado==='vendido'){
-        (bv.numsExtra||[]).forEach(n=>usadosReservado.add(n));
-      }
+    const disponiblesReservado = rangoReservadoDisponibles(usados);
+    if(disponiblesReservado.length < cfg.extrasReservado){
+      throw new Error(`No hay suficientes números extras únicos disponibles. Disponibles: ${disponiblesReservado.length}, requeridos: ${cfg.extrasReservado}.`);
     }
-    // También excluir extras ya asignados en la selección actual
-    // para evitar números extras repetidos dentro de la misma compra.
-    for(const sk of seleccionados){
-      if(sk!==k && numerosAsignadosPorBoleto[sk]){
-        (numerosAsignadosPorBoleto[sk].extra||[]).forEach(n=>usadosReservado.add(n));
-      }
-    }
-    const disponiblesReservado = rangoReservadoDisponibles(usadosReservado);
     const mezclados = [...disponiblesReservado].sort(()=>Math.random()-0.5);
     const extras = mezclados.slice(0, cfg.extrasReservado);
     return { principal: nums, extra: extras.sort((a,b)=>a-b) };
@@ -713,17 +774,32 @@ function elegirAleatorio(){
   const disponibles=[];
   for(let i=0;i<tp;i++){
     const k=pad(i);
-    if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)) disponibles.push(k);
+    if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)&&!numeroYaEntregadoLocal(k)) disponibles.push(k);
   }
   if(!disponibles.length){alert('No hay boletos disponibles.');return;}
   const libresNecesarios=Math.min(cantidad, 10-seleccionados.length);
   if(libresNecesarios<=0){setAlert('alert-compra','Ya tienes 10 boletos seleccionados.','warn');return;}
   const mezclados=[...disponibles].sort(()=>Math.random()-0.5);
-  const elegidos=mezclados.slice(0,libresNecesarios);
-  elegidos.forEach(k=>{
-    seleccionados.push(k);
-    numerosAsignadosPorBoleto[k]=generarNumeros(k);
-  });
+  let agregados=0;
+  let ultimoError='';
+  for(const k of mezclados){
+    if(agregados>=libresNecesarios) break;
+    try{
+      const generados=generarNumeros(k);
+      seleccionados.push(k);
+      numerosAsignadosPorBoleto[k]=generados;
+      agregados++;
+    }catch(e){
+      ultimoError=e.message||String(e);
+    }
+  }
+  if(agregados===0){
+    setAlert('alert-compra',ultimoError||'No hay suficientes números únicos disponibles.','err');
+    return;
+  }
+  if(agregados<libresNecesarios){
+    setAlert('alert-compra',`Solo se pudieron asignar ${agregados} boleto(s) porque ya no hay suficientes números únicos disponibles.`,'warn');
+  }
   renderGrid();
   actualizarFormCompra();
   document.querySelector('.boleto.seleccionado')?.scrollIntoView({behavior:'smooth',block:'center'});
@@ -834,11 +910,27 @@ async function confirmarCompra(){
   if(!validarDatosCompra()) return;
   const boletosCopia=[...seleccionados];
   if(!boletosCopia.length){setAlert('alert-compra','Selecciona al menos un boleto.','err');return;}
-  const yaNoDisponibles=boletosCopia.filter(k=>bloqueados.has(k)||boletos[k]?.estado==='vendido');
+  const yaNoDisponibles=boletosCopia.filter(k=>bloqueados.has(k)||boletos[k]?.estado==='vendido'||numeroYaEntregadoLocal(k));
   if(yaNoDisponibles.length){
-    setAlert('alert-compra',`Los boletos ${yaNoDisponibles.join(', ')} ya no están disponibles. Actualiza tu selección.`,'err');
+    setAlert('alert-compra',`Los números ${yaNoDisponibles.join(', ')} ya no están disponibles. Actualiza tu selección.`,'err');
     renderGrid();
     return;
+  }
+  // Última validación local antes de enviar: no debe haber repetidos en la compra
+  // ni contra números ya entregados.
+  const usadosPrevios=obtenerNumerosVendidosAsignadosLocal();
+  const vistosCompra=new Set();
+  for(const k of boletosCopia){
+    const todos=[...getNums(k),...getExtra(k)];
+    for(const n of todos){
+      const key=normalizarNumeroId(n);
+      if(usadosPrevios.has(key)||vistosCompra.has(key)){
+        setAlert('alert-compra',`El número ${pad(n)} está repetido o ya fue asignado. Limpia la selección y vuelve a intentar.`,'err');
+        renderGrid();
+        return;
+      }
+      vistosCompra.add(key);
+    }
   }
   const nombre=document.getElementById('inp-nombre').value.trim();
   const tel=document.getElementById('inp-tel').value.trim();
