@@ -691,11 +691,11 @@ function generarNumeros(k){
         (bv.numsExtra||[]).forEach(n=>usadosReservado.add(n));
       }
     }
-    // Tambi?n excluir los que ya est?n en selecci?n actual (otros boletos de esta compra)
+    // También excluir extras ya asignados en la selección actual
+    // para evitar números extras repetidos dentro de la misma compra.
     for(const sk of seleccionados){
       if(sk!==k && numerosAsignadosPorBoleto[sk]){
-        // numsExtra est?n en el array completo despu?s del ?ndice 0 si numsPorBoleto=1
-        // En nuestro nuevo modelo se guardan en numsExtra separado
+        (numerosAsignadosPorBoleto[sk].extra||[]).forEach(n=>usadosReservado.add(n));
       }
     }
     const disponiblesReservado = rangoReservadoDisponibles(usadosReservado);
@@ -851,8 +851,12 @@ async function confirmarCompra(){
       const principal=getNums(k);
       const extra=getExtra(k);
       boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:''};
+      const todosAsignados=[...principal,...extra];
       await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
-        nums:principal.map(n=>pad(n)).join(', '),
+        // IMPORTANTE: en Sheets, la columna "Números asignados" debe incluir
+        // el boleto principal + todos los extras automáticos.
+        nums:todosAsignados.map(n=>pad(n)).join(', '),
+        // Se conserva separado solo como referencia adicional para administración.
         numsExtra:extra.map(n=>pad(n)).join(', '),
         fecha,
         total:cfg.precio,
