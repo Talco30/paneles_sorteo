@@ -172,6 +172,22 @@ tr:hover td{background:var(--gray-50)}
 /* == COMPROBANTE PREVIEW == */
 .comprobante-preview{width:100%;max-height:180px;object-fit:contain;border-radius:var(--radius);border:1px solid var(--gray-200);margin-top:8px;display:none}
 
+
+/* == PROCESSING / LOCK SCREEN == */
+.processing-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.82);z-index:300;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
+.processing-box{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:0 24px 60px rgba(0,0,0,0.18);padding:24px 28px;text-align:center;max-width:360px;width:100%}
+.spinner{width:42px;height:42px;border:4px solid var(--purple-light);border-top-color:var(--purple);border-radius:50%;margin:0 auto 14px;animation:spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-title{font-family:var(--font-head);font-size:16px;font-weight:800;color:var(--purple-dark);margin-bottom:4px}
+.processing-sub{font-size:13px;color:var(--text-muted)}
+.btn:disabled,.btn[disabled]{opacity:.62;cursor:not-allowed;transform:none!important}
+.pago-tab[disabled]{opacity:.5;cursor:not-allowed}
+.check-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);background:var(--gray-50);min-height:42px}
+.check-row input{width:auto;margin:0;box-shadow:none}
+.check-row span{font-size:13px;font-weight:700;font-family:var(--font-head);color:var(--text)}
+.whatsapp-link{color:var(--purple-dark);font-weight:800;text-decoration:none}
+.whatsapp-link:hover{text-decoration:underline}
+
 /* == SORTEO RESULT == */
 .ganadores-lista{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .gan-num{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000;font-family:var(--font-head);font-size:16px;font-weight:800;box-shadow:0 3px 10px rgba(240,165,0,0.35)}
@@ -189,6 +205,15 @@ tr:hover td{background:var(--gray-50)}
     <button class="nav-btn active" onclick="showPage('publico')">🎟 Boletos</button>
     <button class="nav-btn" onclick="showPage('buscar')">🔍 Mi boleto</button>
     <button class="nav-btn" onclick="showPage('admin')">⚙️ Admin</button>
+  </div>
+</div>
+
+<!-- ================== BLOQUEO / PROCESANDO ================== -->
+<div class="processing-overlay" id="processing-overlay" style="display:none">
+  <div class="processing-box">
+    <div class="spinner"></div>
+    <div class="processing-title" id="processing-title">Procesando boleto...</div>
+    <div class="processing-sub">No cierres ni recargues esta pantalla. Estamos registrando tu información.</div>
   </div>
 </div>
 
@@ -225,6 +250,7 @@ tr:hover td{background:var(--gray-50)}
     </div>
     <div class="billete-footer">
       <div id="blt-status-pago"></div>
+      <div id="blt-instrucciones-pago"></div>
       <div id="blt-status-ganador"></div>
       <div class="billete-comprobante" id="blt-comprobante-wrap" style="display:none">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:6px">Comprobante de pago</div>
@@ -244,13 +270,6 @@ tr:hover td{background:var(--gray-50)}
 
   <div class="card">
     <div class="card-title"><div class="card-icon">🎯</div>Elige tu boleto</div>
-    <div class="legend">
-      <div class="legend-item"><div class="dot" style="background:#E1F5EE;border-color:#5DCAA5"></div>Vendido</div>
-      <div class="legend-item"><div class="dot" style="background:#F1EFE8;border-color:#B4B2A9"></div>No disponible</div>
-      <div class="legend-item"><div class="dot" style="background:#EEEDFE;border-color:#534AB7"></div>Seleccionado</div>
-      <div class="legend-item"><div class="dot" style="background:#fff;border-color:#D3D1C7"></div>Disponible</div>
-    </div>
-    <div class="grid-wrap" id="grid-boletos"></div>
     <div class="random-sec">
       <div style="display:flex;flex-direction:column;gap:8px;width:100%">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -278,6 +297,13 @@ tr:hover td{background:var(--gray-50)}
         </div>
       </div>
     </div>
+    <div class="legend">
+      <div class="legend-item"><div class="dot" style="background:#E1F5EE;border-color:#5DCAA5"></div>Vendido</div>
+      <div class="legend-item"><div class="dot" style="background:#F1EFE8;border-color:#B4B2A9"></div>No disponible</div>
+      <div class="legend-item"><div class="dot" style="background:#EEEDFE;border-color:#534AB7"></div>Seleccionado</div>
+      <div class="legend-item"><div class="dot" style="background:#fff;border-color:#D3D1C7"></div>Disponible</div>
+    </div>
+    <div class="grid-wrap" id="grid-boletos"></div>
   </div>
 
   <!-- FORM DATOS -->
@@ -297,9 +323,9 @@ tr:hover td{background:var(--gray-50)}
     <div class="sep"></div>
     <div class="card-title" style="margin-bottom:12px"><div class="card-icon">💳</div>Método de pago</div>
     <div class="pago-tabs">
-      <button class="pago-tab active" onclick="selectPagoTab('transferencia',this)">🏦 Transferencia</button>
-      <button class="pago-tab" onclick="selectPagoTab('mercadopago',this)">💙 Mercado Pago</button>
-      <button class="pago-tab" onclick="selectPagoTab('paypal',this)">🔵 PayPal</button>
+      <button class="pago-tab active" id="tab-transferencia" onclick="selectPagoTab('transferencia',this)">🏦 Transferencia</button>
+      <button class="pago-tab" id="tab-mercadopago" onclick="selectPagoTab('mercadopago',this)">💙 Mercado Pago</button>
+      <button class="pago-tab" id="tab-paypal" onclick="selectPagoTab('paypal',this)">🔵 PayPal</button>
     </div>
 
     <div class="pago-panel active" id="pago-transferencia">
@@ -310,6 +336,7 @@ tr:hover td{background:var(--gray-50)}
         <div class="transferencia-row"><span class="transferencia-key">Monto a pagar</span><span class="transferencia-val" id="tf-monto" style="color:var(--purple)">—</span></div>
       </div>
       <div style="margin-top:10px" class="alert alert-warn">⚠️ Tu boleto quedará como <strong>pendiente de pago</strong> hasta que el administrador confirme la transferencia.</div>
+      <div id="transferencia-nota-pago"></div>
     </div>
 
     <div class="pago-panel" id="pago-mercadopago">
@@ -333,7 +360,7 @@ tr:hover td{background:var(--gray-50)}
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="confirmarCompra()">✓ Registrar boleto</button>
+      <button class="btn btn-primary" id="btn-registrar-boleto" onclick="confirmarCompra()">✓ Registrar boleto</button>
       <button class="btn btn-secondary" onclick="cancelarSeleccion()">Cancelar</button>
     </div>
   </div>
@@ -414,8 +441,15 @@ tr:hover td{background:var(--gray-50)}
         <div><label>CLABE / Cuenta</label><input type="text" id="cfg-clabe" placeholder="0000 0000 0000 0000"></div>
         <div><label>Titular</label><input type="text" id="cfg-titular" placeholder="Nombre del titular"></div>
       </div>
+      <div class="form-row full">
+        <div><label>WhatsApp para comprobantes</label><input type="tel" id="cfg-whatsapp-pago" placeholder="Ej. 528112345678"></div>
+      </div>
       <div class="sep"></div>
       <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">LINKS DE PAGO</div>
+      <div class="form-row">
+        <label class="check-row"><input type="checkbox" id="cfg-mp-enabled"><span>Habilitar Mercado Pago</span></label>
+        <label class="check-row"><input type="checkbox" id="cfg-pp-enabled"><span>Habilitar PayPal</span></label>
+      </div>
       <div class="form-row">
         <div><label>Link Mercado Pago</label><input type="text" id="cfg-mp-link" placeholder="https://link.mercadopago.com.mx/..."></div>
         <div><label>Link PayPal.me</label><input type="text" id="cfg-pp-link" placeholder="https://paypal.me/..."></div>
@@ -470,7 +504,7 @@ tr:hover td{background:var(--gray-50)}
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Boleto</th><th>Números</th><th>Nombre</th><th>Teléfono</th><th>Pago</th><th>Ganador</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Boleto</th><th>Números</th><th>Nombre</th><th>Pago</th><th>Comprobante</th><th>Ganador</th><th>Acciones</th></tr></thead>
           <tbody id="tbody-vendidos"></tbody>
         </table>
       </div>
@@ -491,7 +525,8 @@ tr:hover td{background:var(--gray-50)}
 let PASS_ADMIN = "admin123";
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
-  sheetsUrl:"", banco:"", clabe:"", titular:"", mpLink:"", ppLink:"",
+  sheetsUrl:"", banco:"", clabe:"", titular:"", whatsappPago:"",
+  mpLink:"", ppLink:"", mpEnabled:false, ppEnabled:false,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
   ganadores:[],
   rangoPublicoMax: 0,   
@@ -502,6 +537,7 @@ let bloqueados = new Set();
 let seleccionados = []; // array de boletos seleccionados (multi)
 let numerosAsignadosPorBoleto = {}; // {boleto: [nums]}
 let adminLogado = false;
+let compraProcesando = false;
 
 // ==========================================
 //  PERSISTENCIA
@@ -531,6 +567,30 @@ function cargarEstado(){
 // ==========================================
 function total(){ return Math.pow(10,cfg.digitos); }
 function pad(n){ return String(n).padStart(cfg.digitos,'0'); }
+function whatsappDisplay(){ return (cfg.whatsappPago||'').trim() || 'WhatsApp del administrador'; }
+function whatsappUrl(){
+  let n=(cfg.whatsappPago||'').replace(/\D/g,'');
+  if(n.length===10) n='52'+n;
+  return n?`https://wa.me/${n}`:'#';
+}
+function notaPagoHtml(){
+  const wa=whatsappDisplay();
+  const link=whatsappUrl();
+  const waHtml=link==='#'?`<strong>${wa}</strong>`:`<a class="whatsapp-link" href="${link}" target="_blank">${wa}</a>`;
+  return `<div class="alert alert-warn" style="margin-top:12px;text-align:left">⏰ Tu boleto quedará separado por <strong>24 horas</strong>. Para confirmarlo, envía por WhatsApp el comprobante de transferencia al ${waHtml}.</div>`;
+}
+function setCompraProcesando(activo, mensaje){
+  compraProcesando=activo;
+  const overlay=document.getElementById('processing-overlay');
+  const title=document.getElementById('processing-title');
+  if(title) title.textContent=mensaje||'Procesando boleto...';
+  if(overlay) overlay.style.display=activo?'flex':'none';
+  const btn=document.getElementById('btn-registrar-boleto');
+  if(btn){
+    btn.disabled=activo;
+    btn.textContent=activo?'⏳ Procesando boleto...':'✓ Registrar boleto';
+  }
+}
 
 // Rango p?blico: cu?ntos boletos se muestran en la grilla al cliente
 function totalPublico(){
@@ -554,7 +614,7 @@ function initBoletos(){
   const tp = totalPublico();
   for(let i=0;i<tp;i++){
     const k=pad(i);
-    if(!boletos[k]) boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:''};
+    if(!boletos[k]) boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:''};
   }
 }
 
@@ -598,6 +658,7 @@ function actualizarContadorSel(){
 }
 
 function seleccionarBoleto(k){
+  if(compraProcesando) return;
   if(bloqueados.has(k)||boletos[k]?.estado==='vendido') return;
   const idx=seleccionados.indexOf(k);
   if(idx>=0){
@@ -646,6 +707,7 @@ function generarNumeros(k){
 }
 
 function elegirAleatorio(){
+  if(compraProcesando) return;
   const cantidad=parseInt(document.getElementById('sel-cantidad-random').value)||1;
   const tp=totalPublico();
   const disponibles=[];
@@ -699,11 +761,15 @@ function actualizarFormCompra(){
   document.getElementById('tf-clabe').textContent=cfg.clabe||'—';
   document.getElementById('tf-titular').textContent=cfg.titular||'—';
   document.getElementById('tf-monto').textContent=`$${total_pagar.toLocaleString('es-MX')} MXN`;
-  document.getElementById('mp-link').href=cfg.mpLink||'#';
-  document.getElementById('pp-link').href=cfg.ppLink||'#';
+  document.getElementById('mp-link').href=(cfg.mpEnabled&&cfg.mpLink)?cfg.mpLink:'#';
+  document.getElementById('pp-link').href=(cfg.ppEnabled&&cfg.ppLink)?cfg.ppLink:'#';
+  const nota=document.getElementById('transferencia-nota-pago');
+  if(nota) nota.innerHTML=notaPagoHtml();
+  actualizarMetodosPagoVisibles();
 }
 
 function limpiarSeleccion(){
+  if(compraProcesando) return;
   seleccionados=[];
   numerosAsignadosPorBoleto={};
   renderGrid();
@@ -719,14 +785,39 @@ function cancelarSeleccion(){
 //  PAGO TABS
 // ==========================================
 function selectPagoTab(id, btn){
+  if(id==='mercadopago' && !cfg.mpEnabled) return;
+  if(id==='paypal' && !cfg.ppEnabled) return;
   document.querySelectorAll('.pago-tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.pago-panel').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('pago-'+id).classList.add('active');
 }
 
-function registrarPagoMP(){ if(!validarDatosCompra()) return false; }
-function registrarPagoPP(){ if(!validarDatosCompra()) return false; }
+function actualizarMetodosPagoVisibles(){
+  const mpVisible=!!cfg.mpEnabled;
+  const ppVisible=!!cfg.ppEnabled;
+  const mpTab=document.getElementById('tab-mercadopago');
+  const ppTab=document.getElementById('tab-paypal');
+  const mpPanel=document.getElementById('pago-mercadopago');
+  const ppPanel=document.getElementById('pago-paypal');
+  if(mpTab) mpTab.style.display=mpVisible?'inline-flex':'none';
+  if(ppTab) ppTab.style.display=ppVisible?'inline-flex':'none';
+  if(mpPanel) mpPanel.style.display=mpVisible?'':'none';
+  if(ppPanel) ppPanel.style.display=ppVisible?'':'none';
+  const active=document.querySelector('.pago-panel.active');
+  if(active && active.style.display==='none'){
+    selectPagoTab('transferencia', document.getElementById('tab-transferencia'));
+  }
+}
+
+function registrarPagoMP(){
+  if(!cfg.mpEnabled || !cfg.mpLink){setAlert('alert-compra','Mercado Pago no está habilitado.','err');return false;}
+  if(!validarDatosCompra()) return false;
+}
+function registrarPagoPP(){
+  if(!cfg.ppEnabled || !cfg.ppLink){setAlert('alert-compra','PayPal no está habilitado.','err');return false;}
+  if(!validarDatosCompra()) return false;
+}
 
 // ==========================================
 //  CONFIRMAR COMPRA ? BILLETE
@@ -739,30 +830,51 @@ function validarDatosCompra(){
 }
 
 async function confirmarCompra(){
+  if(compraProcesando) return;
   if(!validarDatosCompra()) return;
+  const boletosCopia=[...seleccionados];
+  if(!boletosCopia.length){setAlert('alert-compra','Selecciona al menos un boleto.','err');return;}
+  const yaNoDisponibles=boletosCopia.filter(k=>bloqueados.has(k)||boletos[k]?.estado==='vendido');
+  if(yaNoDisponibles.length){
+    setAlert('alert-compra',`Los boletos ${yaNoDisponibles.join(', ')} ya no están disponibles. Actualiza tu selección.`,'err');
+    renderGrid();
+    return;
+  }
   const nombre=document.getElementById('inp-nombre').value.trim();
   const tel=document.getElementById('inp-tel').value.trim();
   const email=document.getElementById('inp-email').value.trim();
   const fecha=new Date().toLocaleString('es-MX');
-  const boletosCopia=[...seleccionados];
-  for(const k of boletosCopia){
-    const principal=getNums(k);
-    const extra=getExtra(k);
-    boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:''};
-    await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
-      nums:principal.map(n=>pad(n)).join(', '),
-      numsExtra:extra.map(n=>pad(n)).join(', '),
-      fecha});
+  setAlert('alert-compra','⏳ Procesando boleto, por favor no cierres ni recargues esta pantalla...','info');
+  setCompraProcesando(true, boletosCopia.length>1?'Procesando boletos...':'Procesando boleto...');
+  try{
+    for(const k of boletosCopia){
+      const principal=getNums(k);
+      const extra=getExtra(k);
+      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:''};
+      await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
+        nums:principal.map(n=>pad(n)).join(', '),
+        numsExtra:extra.map(n=>pad(n)).join(', '),
+        fecha,
+        total:cfg.precio,
+        estadoPago:'Pendiente de Pago',
+        pagado:false,
+        whatsappPago:cfg.whatsappPago||''});
+    }
+    guardarEstado(); renderGrid(); renderStats();
+    if(adminLogado) renderAdmin();
+    document.getElementById('inp-nombre').value='';
+    document.getElementById('inp-tel').value='';
+    document.getElementById('inp-email').value='';
+    seleccionados=[]; numerosAsignadosPorBoleto={};
+    document.getElementById('form-compra').style.display='none';
+    setAlert('alert-compra','','');
+    mostrarBilleteMultiple(boletosCopia, nombre, tel, email, fecha);
+  }catch(e){
+    console.error(e);
+    setAlert('alert-compra','No se pudo completar el registro. Revisa tu conexión e intenta de nuevo.','err');
+  }finally{
+    setCompraProcesando(false);
   }
-  guardarEstado(); renderGrid(); renderStats();
-  if(adminLogado) renderAdmin();
-  document.getElementById('inp-nombre').value='';
-  document.getElementById('inp-tel').value='';
-  document.getElementById('inp-email').value='';
-  seleccionados=[]; numerosAsignadosPorBoleto={};
-  document.getElementById('form-compra').style.display='none';
-  setAlert('alert-compra','','');
-  mostrarBilleteMultiple(boletosCopia, nombre, tel, email, fecha);
 }
 
 // Billete para compra de m?ltiples boletos (se muestra al confirmar)
@@ -794,6 +906,7 @@ function mostrarBilleteMultiple(keys, nombre, tel, email, fecha){
   if(cfg.fechaSorteo){const d=new Date(cfg.fechaSorteo+'T12:00:00');fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
   document.getElementById('blt-fecha-sorteo').innerHTML=`${fs}<br><span style="font-size:11px;font-weight:400;color:var(--text-muted)">${cfg.notaFecha||''}</span>`;
   document.getElementById('blt-status-pago').innerHTML='<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
+  document.getElementById('blt-instrucciones-pago').innerHTML=notaPagoHtml();
   const ganDiv=document.getElementById('blt-status-ganador');
   if(cfg.ganadores&&cfg.ganadores.length>0){
     ganDiv.innerHTML=esGan?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>':'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Estos boletos no resultaron ganadores</div>';
@@ -829,6 +942,7 @@ function mostrarBillete(k){
   document.getElementById('blt-status-pago').innerHTML=b.pagado
     ?'<div class="billete-status-pagado">✅ Pago confirmado</div>'
     :'<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
+  document.getElementById('blt-instrucciones-pago').innerHTML=b.pagado?'':notaPagoHtml();
   const ganDiv=document.getElementById('blt-status-ganador');
   if(cfg.ganadores&&cfg.ganadores.length>0){
     ganDiv.innerHTML=esGan
@@ -891,7 +1005,7 @@ function buscarBoleto(){
   }
   // Buscar por n?mero del sorteo asignado
   const num=parseInt(val,10);
-  const encontrado=Object.entries(boletos).find(([,b])=>b.estado==='vendido'&&(b.nums||[]).includes(num));
+  const encontrado=Object.entries(boletos).find(([,b])=>b.estado==='vendido'&&((b.nums||[]).includes(num)||(b.numsExtra||[]).includes(num)));
   if(encontrado){
     mostrarBillete(encontrado[0]);
     setAlert('alert-buscar','','');
@@ -946,7 +1060,8 @@ function renderAdmin(){
             <span>${b.pagado?'<span class="badge badge-verde">Pagado</span>':'<span class="badge badge-amarillo">Pendiente</span>'}</span>
           </label>
         </td>
-        <td>${esNumGanador(b.nums||[])?'<span class="badge badge-dorado">🏆 Ganador</span>':'<span class="badge badge-gris">—</span>'}</td>
+        <td>${b.comprobante?'<span class="badge badge-verde">Imagen cargada</span>':'<span class="badge badge-gris">Sin imagen</span>'}</td>
+        <td>${esNumGanador(b.nums||[],b.numsExtra||[])?'<span class="badge badge-dorado">🏆 Ganador</span>':'<span class="badge badge-gris">—</span>'}</td>
         <td>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
             <button class="btn btn-secondary btn-sm" onclick="mostrarBillete('${k}')">🎟 Ver</button>
@@ -976,6 +1091,9 @@ function loadConfigUI(){
   document.getElementById('cfg-banco').value=cfg.banco||'';
   document.getElementById('cfg-clabe').value=cfg.clabe||'';
   document.getElementById('cfg-titular').value=cfg.titular||'';
+  document.getElementById('cfg-whatsapp-pago').value=cfg.whatsappPago||'';
+  document.getElementById('cfg-mp-enabled').checked=!!cfg.mpEnabled;
+  document.getElementById('cfg-pp-enabled').checked=!!cfg.ppEnabled;
   document.getElementById('cfg-mp-link').value=cfg.mpLink||'';
   document.getElementById('cfg-pp-link').value=cfg.ppLink||'';
   document.getElementById('cfg-fecha-sorteo').value=cfg.fechaSorteo||'';
@@ -993,9 +1111,10 @@ function subirComprobante(k, input){
   const reader=new FileReader();
   reader.onload=e=>{
     boletos[k].comprobante=e.target.result;
+    boletos[k].comprobanteNombre=file.name;
     boletos[k].pagado=true;
     guardarEstado();renderAdmin();
-    enviarSheets({accion:'comprobante',boleto:k,fecha:new Date().toLocaleString('es-MX')});
+    enviarSheets({accion:'comprobante',boleto:k,pagado:true,estadoPago:'Pagado',comprobante:e.target.result,comprobanteNombre:file.name,comprobanteTipo:file.type,fecha:new Date().toLocaleString('es-MX')});
   };
   reader.readAsDataURL(file);
 }
@@ -1003,7 +1122,7 @@ function subirComprobante(k, input){
 function togglePago(k, val){
   boletos[k].pagado=val;
   guardarEstado();renderAdmin();
-  enviarSheets({accion:'pago',boleto:k,pagado:val,fecha:new Date().toLocaleString('es-MX')});
+  enviarSheets({accion:'pago',boleto:k,pagado:val,estadoPago:val?'Pagado':'Pendiente de Pago',fecha:new Date().toLocaleString('es-MX')});
 }
 
 // ==========================================
@@ -1042,6 +1161,9 @@ function guardarConfig(){
   cfg.banco=document.getElementById('cfg-banco').value.trim();
   cfg.clabe=document.getElementById('cfg-clabe').value.trim();
   cfg.titular=document.getElementById('cfg-titular').value.trim();
+  cfg.whatsappPago=document.getElementById('cfg-whatsapp-pago').value.trim();
+  cfg.mpEnabled=document.getElementById('cfg-mp-enabled').checked;
+  cfg.ppEnabled=document.getElementById('cfg-pp-enabled').checked;
   cfg.mpLink=document.getElementById('cfg-mp-link').value.trim();
   cfg.ppLink=document.getElementById('cfg-pp-link').value.trim();
   cfg.fechaSorteo=document.getElementById('cfg-fecha-sorteo').value;
@@ -1051,7 +1173,7 @@ function guardarConfig(){
   document.getElementById('sorteo-nombre').textContent=cfg.nombre;
   document.getElementById('sorteo-sub').textContent=`$${cfg.precio.toLocaleString('es-MX')} por boleto · ${cfg.numsPorBoleto} número${cfg.numsPorBoleto>1?'s':''} por boleto`;
   document.title=cfg.nombre+' — Sorteo';
-  guardarEstado();renderGrid();renderStats();renderAdmin();
+  guardarEstado();renderGrid();renderStats();renderAdmin();actualizarMetodosPagoVisibles();
   setAlert('alert-cfg',cambio?'✅ Guardado. Boletos reiniciados.':'✅ Configuración guardada.','ok');
 }
 
@@ -1091,7 +1213,7 @@ function desbloquearEspecifico(k){bloqueados.delete(k);guardarEstado();renderGri
 
 function eliminarVenta(k){
   if(!confirm(`¿Cancelar venta del boleto ${k}?`)) return;
-  boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],fecha:'',pagado:false,comprobante:''};
+  boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:''};
   guardarEstado();renderGrid();renderAdmin();
   enviarSheets({accion:'cancelacion',boleto:k,fecha:new Date().toLocaleString('es-MX')});
 }
@@ -1117,10 +1239,10 @@ async function enviarSheets(data){
 function exportarCSV(){
   const vend=Object.entries(boletos).filter(([,b])=>b.estado==='vendido');
   if(!vend.length) return;
-  const rows=[['Boleto','Números','Nombre','Teléfono','Correo','Fecha','Pagado','Ganador']];
+  const rows=[['Boleto','Números','Números extra','Nombre','Teléfono','Correo','Fecha','Pagado','Comprobante','Ganador']];
   vend.forEach(([k,b])=>rows.push([
-    k,(b.nums||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',
-    esNumGanador(b.nums||[])?'Sí':'No'
+    k,(b.nums||[]).join(' | '),(b.numsExtra||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',b.comprobante?'Sí':'No',
+    esNumGanador(b.nums||[],b.numsExtra||[])?'Sí':'No'
   ]));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
@@ -1167,6 +1289,7 @@ cargarEstado();
 initBoletos();
 renderGrid();
 renderStats();
+actualizarMetodosPagoVisibles();
 document.getElementById('sorteo-nombre').textContent=cfg.nombre;
 document.getElementById('sorteo-sub').textContent=`$${cfg.precio.toLocaleString('es-MX')} por boleto · ${cfg.numsPorBoleto} número${cfg.numsPorBoleto>1?'s':''} por boleto`;
 document.title=cfg.nombre+' — Sorteo';
