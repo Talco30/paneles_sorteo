@@ -23,10 +23,16 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 h1,h2,h3{font-family:var(--font-head)}
 
 /* == TOPBAR == */
-.topbar{background:var(--purple);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(83,74,183,0.3)}
-.topbar-title{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:-0.02em}
-.topbar-sub{font-size:12px;opacity:0.75;margin-top:1px}
-.topbar-nav{display:flex;gap:5px;flex-wrap:wrap}
+.topbar{background:var(--purple);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(83,74,183,0.3);gap:14px}
+.topbar-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo-box{display:none;align-items:center;justify-content:center;width:52px;height:52px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);border-radius:14px;overflow:hidden;flex-shrink:0}
+.logo-box img{width:100%;height:100%;object-fit:contain;display:block}
+.topbar-info{min-width:0}
+.topbar-title{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:-0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-sub{font-size:12px;opacity:0.82;margin-top:1px}
+.topbar-date{font-size:11px;opacity:0.72;margin-top:1px}
+.topbar-nav{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:640px){.topbar{align-items:flex-start;flex-direction:column}.topbar-brand{width:100%}.topbar-nav{width:100%;justify-content:flex-start}.logo-box{width:46px!important;height:46px!important}.topbar-title{white-space:normal}}
 .nav-btn{padding:7px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.12);color:#fff;border:none;transition:all 0.15s;font-family:var(--font-head)}
 .nav-btn:hover{background:rgba(255,255,255,0.22)}
 .nav-btn.active{background:#fff;color:var(--purple)}
@@ -188,6 +194,29 @@ tr:hover td{background:var(--gray-50)}
 .whatsapp-link{color:var(--purple-dark);font-weight:800;text-decoration:none}
 .whatsapp-link:hover{text-decoration:underline}
 
+/* == LOGO ADMIN == */
+.logo-admin-preview{display:flex;align-items:center;gap:10px;margin-top:8px}
+.logo-admin-preview-box{width:160px;height:50px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:var(--gray-50);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-muted);font-size:12px}
+.logo-admin-preview-box img{max-width:100%;max-height:100%;object-fit:contain}
+
+/* == POP UP / ANUNCIO == */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:240;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.popup-wrap{background:var(--white);border-radius:22px;max-width:430px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,0.28);overflow:hidden;animation:slideUp 0.32s ease}
+.popup-head{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;padding:18px 22px;position:relative}
+.popup-title{font-family:var(--font-head);font-size:19px;font-weight:800;line-height:1.15;padding-right:32px}
+.popup-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.popup-body{padding:18px 22px;font-size:14px;color:var(--text);line-height:1.45;white-space:pre-line}
+.popup-foot{padding:0 22px 20px;text-align:center}
+.popup-btn{min-width:120px}
+
+/* == RESULTADO PÚBLICO == */
+.resultado-publico{display:none;background:linear-gradient(135deg,#fff8d6,#fff);border:1.5px solid #FAC775;border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.resultado-publico-title{font-family:var(--font-head);font-weight:800;font-size:16px;color:#3D2000;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.resultado-publico-sub{font-size:13px;color:#633806;margin-bottom:10px}
+.resultado-publico-nums{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.resultado-num{display:flex;align-items:center;justify-content:center;min-width:50px;height:42px;border-radius:10px;background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000;font-family:var(--font-head);font-size:16px;font-weight:800;box-shadow:0 3px 10px rgba(240,165,0,0.28);padding:0 10px}
+.resultado-publico-boletos{font-size:12px;color:#633806;margin-top:10px;background:rgba(250,199,117,0.22);border-radius:var(--radius);padding:8px 10px}
+
 /* == SORTEO RESULT == */
 .ganadores-lista{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .gan-num{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000;font-family:var(--font-head);font-size:16px;font-weight:800;box-shadow:0 3px 10px rgba(240,165,0,0.35)}
@@ -197,9 +226,13 @@ tr:hover td{background:var(--gray-50)}
 
 <!-- == TOPBAR == -->
 <div class="topbar">
-  <div>
-    <div class="topbar-title" id="sorteo-nombre">Sorteo Demo</div>
-    <div class="topbar-sub" id="sorteo-sub">$100 por boleto · 15 números por boleto</div>
+  <div class="topbar-brand">
+    <div class="logo-box" id="topbar-logo-box"><img id="topbar-logo-img" src="" alt="Logotipo"></div>
+    <div class="topbar-info">
+      <div class="topbar-title" id="sorteo-nombre">Sorteo Demo</div>
+      <div class="topbar-sub" id="sorteo-sub">$100 por boleto · 1 número por boleto</div>
+      <div class="topbar-date" id="sorteo-fecha-line">Fecha tentativa: por definir</div>
+    </div>
   </div>
   <div class="topbar-nav">
     <button class="nav-btn active" onclick="showPage('publico')">🎟 Boletos</button>
@@ -214,6 +247,20 @@ tr:hover td{background:var(--gray-50)}
     <div class="spinner"></div>
     <div class="processing-title" id="processing-title">Procesando boleto...</div>
     <div class="processing-sub">No cierres ni recargues esta pantalla. Estamos registrando tu información.</div>
+  </div>
+</div>
+
+<!-- ================== POP UP / ANUNCIO ================== -->
+<div class="popup-overlay" id="popup-modal" style="display:none" onclick="cerrarPopup(event)">
+  <div class="popup-wrap" onclick="event.stopPropagation()">
+    <div class="popup-head">
+      <button class="popup-close" onclick="cerrarPopupDirecto()">✕</button>
+      <div class="popup-title" id="popup-title">Aviso importante</div>
+    </div>
+    <div class="popup-body" id="popup-message">Mensaje del sorteo</div>
+    <div class="popup-foot">
+      <button class="btn btn-primary popup-btn" id="popup-btn" onclick="cerrarPopupDirecto()">Entendido</button>
+    </div>
   </div>
 </div>
 
@@ -266,6 +313,7 @@ tr:hover td{background:var(--gray-50)}
 
 <!-- ================== PÁGINA PÚBLICA ================== -->
 <div class="content" id="page-publico">
+  <div id="resultado-publico" class="resultado-publico"></div>
   <div class="stats-row" id="stats-publico"></div>
 
   <div class="card">
@@ -405,6 +453,28 @@ tr:hover td{background:var(--gray-50)}
         <div><label>Nombre del sorteo</label><input type="text" id="cfg-nombre" placeholder="Mi sorteo"></div>
         <div><label>Precio por boleto ($)</label><input type="number" id="cfg-precio" min="1"></div>
       </div>
+      <div class="sep"></div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">LOGOTIPO EN CABECERA</div>
+      <div class="form-row">
+        <div>
+          <label>URL del logotipo o imagen cargada</label>
+          <input type="text" id="cfg-logo-url" placeholder="https://.../logo.png o carga una imagen abajo">
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Tamaño recomendado: <strong>160 × 50 px</strong>. Máximo sugerido en cabecera: <strong>220 × 60 px</strong>.</div>
+        </div>
+        <div>
+          <label>Cambiar logotipo desde Admin</label>
+          <input type="file" accept="image/*" id="cfg-logo-file" onchange="subirLogoAdmin(this)">
+          <div class="logo-admin-preview">
+            <div class="logo-admin-preview-box" id="logo-admin-preview">Sin logo</div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="quitarLogoAdmin()">Quitar</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label>Ancho del logo en cabecera (px)</label><input type="number" id="cfg-logo-width" min="24" max="220" value="160"></div>
+        <div><label>Alto del logo en cabecera (px)</label><input type="number" id="cfg-logo-height" min="24" max="80" value="50"></div>
+      </div>
+      <div class="sep"></div>
       <div class="form-row">
         <div>
           <label>Dígitos del número (rango)</label>
@@ -433,6 +503,19 @@ tr:hover td{background:var(--gray-50)}
       <div class="form-row">
         <div><label>Fecha tentativa del sorteo</label><input type="date" id="cfg-fecha-sorteo"></div>
         <div><label>Nota sobre fecha (ej. "sujeto a venta total")</label><input type="text" id="cfg-nota-fecha" placeholder="Sujeto a completar venta"></div>
+      </div>
+      <div class="sep"></div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">POP UP / ANUNCIO PÚBLICO</div>
+      <div class="form-row">
+        <label class="check-row"><input type="checkbox" id="cfg-popup-enabled"><span>Activar pop up al abrir el sorteo</span></label>
+        <div><label>Título del pop up</label><input type="text" id="cfg-popup-title" placeholder="Aviso importante"></div>
+      </div>
+      <div class="form-row full">
+        <div><label>Mensaje del pop up</label><textarea id="cfg-popup-message" rows="4" placeholder="Ej. Cambio de fecha, promoción especial, ganador anunciado, etc."></textarea></div>
+      </div>
+      <div class="form-row">
+        <div><label>Texto del botón</label><input type="text" id="cfg-popup-button" placeholder="Entendido"></div>
+        <div style="display:flex;align-items:flex-end"><button type="button" class="btn btn-secondary" onclick="mostrarPopup(true)">👁️ Vista previa del pop up</button></div>
       </div>
       <div class="sep"></div>
       <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">DATOS DE TRANSFERENCIA</div>
@@ -533,7 +616,9 @@ let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
   sheetsUrl:"", banco:"", clabe:"", titular:"", whatsappPago:"",
   mpLink:"", ppLink:"", mpEnabled:false, ppEnabled:false,
+  logoUrl:"", logoWidth:160, logoHeight:50,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
+  popupEnabled:false, popupTitle:"Aviso importante", popupMessage:"", popupButton:"Entendido", popupLastShownKey:"",
   ganadores:[],
   rangoPublicoMax: 0,   
   extrasReservado: 0    
@@ -630,6 +715,110 @@ function notaPagoHtml(){
   const waHtml=link==='#'?`<strong>${wa}</strong>`:`<a class="whatsapp-link" href="${link}" target="_blank">${wa}</a>`;
   return `<div class="alert alert-warn" style="margin-top:12px;text-align:left">⏰ Tu boleto quedará separado por <strong>24 horas</strong>. Para confirmarlo, envía por WhatsApp el comprobante de transferencia al ${waHtml}.</div>`;
 }
+function numerosMostradosPorBoleto(){
+  const base=Math.max(1, parseInt(cfg.numsPorBoleto)||1);
+  const extras=Math.max(0, parseInt(cfg.extrasReservado)||0);
+  return base + extras;
+}
+function fechaSorteoTextoCorto(){
+  if(!cfg.fechaSorteo) return 'Fecha tentativa: por definir';
+  const d=new Date(cfg.fechaSorteo+'T12:00:00');
+  const fecha=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  return `Fecha tentativa del sorteo: ${fecha}`;
+}
+function actualizarCabecera(){
+  const logoBox=document.getElementById('topbar-logo-box');
+  const logoImg=document.getElementById('topbar-logo-img');
+  const w=Math.min(Math.max(parseInt(cfg.logoWidth)||160,24),220);
+  const h=Math.min(Math.max(parseInt(cfg.logoHeight)||50,24),80);
+  if(logoBox && logoImg){
+    if(cfg.logoUrl){
+      logoImg.src=cfg.logoUrl;
+      logoBox.style.display='flex';
+      logoBox.style.width=w+'px';
+      logoBox.style.height=h+'px';
+    }else{
+      logoImg.removeAttribute('src');
+      logoBox.style.display='none';
+    }
+  }
+  const nombre=document.getElementById('sorteo-nombre');
+  const sub=document.getElementById('sorteo-sub');
+  const fecha=document.getElementById('sorteo-fecha-line');
+  if(nombre) nombre.textContent=cfg.nombre||'Sorteo';
+  const n=numerosMostradosPorBoleto();
+  if(sub) sub.textContent=`$${(cfg.precio||0).toLocaleString('es-MX')} por boleto · ${n} número${n>1?'s':''} por boleto`;
+  if(fecha) fecha.textContent=fechaSorteoTextoCorto();
+  document.title=(cfg.nombre||'Sorteo')+' — Sorteo';
+}
+function actualizarPreviewLogoAdmin(){
+  const prev=document.getElementById('logo-admin-preview');
+  if(!prev) return;
+  if(cfg.logoUrl){
+    prev.innerHTML=`<img src="${cfg.logoUrl}" alt="Preview logo">`;
+  }else{
+    prev.textContent='Sin logo';
+  }
+}
+function subirLogoAdmin(input){
+  const file=input.files && input.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){setAlert('alert-cfg','El archivo del logo debe ser una imagen.','err');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    cfg.logoUrl=e.target.result;
+    const urlInput=document.getElementById('cfg-logo-url');
+    if(urlInput) urlInput.value=cfg.logoUrl;
+    actualizarCabecera();
+    actualizarPreviewLogoAdmin();
+    setAlert('alert-cfg','Logo cargado. Presiona Guardar ajustes para conservarlo.','info');
+  };
+  reader.readAsDataURL(file);
+}
+function quitarLogoAdmin(){
+  cfg.logoUrl='';
+  const urlInput=document.getElementById('cfg-logo-url');
+  const fileInput=document.getElementById('cfg-logo-file');
+  if(urlInput) urlInput.value='';
+  if(fileInput) fileInput.value='';
+  actualizarCabecera();
+  actualizarPreviewLogoAdmin();
+}
+function htmlEscape(str){
+  return String(str??'').replace(/[&<>'"]/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[ch]));
+}
+function mostrarPopupContenido(titulo, mensaje, boton){
+  const modal=document.getElementById('popup-modal');
+  const title=document.getElementById('popup-title');
+  const msg=document.getElementById('popup-message');
+  const btn=document.getElementById('popup-btn');
+  if(title) title.textContent=titulo||'Aviso importante';
+  if(msg) msg.innerHTML=htmlEscape(mensaje||'Aviso del sorteo').replace(/\n/g,'<br>');
+  if(btn) btn.textContent=boton||'Entendido';
+  if(modal) modal.style.display='flex';
+}
+function mostrarPopup(forzar){
+  if(!forzar && !cfg.popupEnabled) return;
+  let titulo=cfg.popupTitle||'Aviso importante';
+  let mensaje=cfg.popupMessage||'Aviso del sorteo';
+  let boton=cfg.popupButton||'Entendido';
+  // Vista previa desde Admin: usa lo que está escrito en los campos aunque aún no se haya guardado.
+  if(forzar && document.getElementById('cfg-popup-title')){
+    titulo=document.getElementById('cfg-popup-title').value.trim()||titulo;
+    mensaje=document.getElementById('cfg-popup-message').value.trim()||mensaje;
+    boton=document.getElementById('cfg-popup-button').value.trim()||boton;
+  }
+  mostrarPopupContenido(titulo,mensaje,boton);
+}
+function cerrarPopup(event){
+  if(event && event.target && event.target.id!=='popup-modal') return;
+  cerrarPopupDirecto();
+}
+function cerrarPopupDirecto(){
+  const modal=document.getElementById('popup-modal');
+  if(modal) modal.style.display='none';
+}
+
 function setCompraProcesando(activo, mensaje){
   compraProcesando=activo;
   const overlay=document.getElementById('processing-overlay');
@@ -1143,6 +1332,49 @@ function renderStats(){
   }
 }
 
+
+// ==========================================
+//  RESULTADO PÚBLICO
+// ==========================================
+function obtenerBoletosGanadores(){
+  const gan=[];
+  if(!cfg.ganadores||!cfg.ganadores.length) return gan;
+  for(const [k,b] of Object.entries(boletos)){
+    if(b && b.estado==='vendido' && esNumGanador(b.nums||[], b.numsExtra||[])){
+      gan.push(k);
+    }
+  }
+  return gan.sort();
+}
+function renderResultadoPublico(){
+  const div=document.getElementById('resultado-publico');
+  if(!div) return;
+  if(!cfg.ganadores||!cfg.ganadores.length){
+    div.style.display='none';
+    div.innerHTML='';
+    return;
+  }
+  const nums=cfg.ganadores.map(n=>`<span class="resultado-num">${pad(n)}</span>`).join('');
+  const boletosGanadores=obtenerBoletosGanadores();
+  const boletosHtml=boletosGanadores.length
+    ? `<div class="resultado-publico-boletos"><strong>Boleto${boletosGanadores.length>1?'s':''} con número ganador:</strong> ${boletosGanadores.join(', ')}</div>`
+    : `<div class="resultado-publico-boletos">El resultado está publicado. Busca tu boleto en la sección <strong>Mi boleto</strong> para revisar si participa con un número ganador.</div>`;
+  div.innerHTML=`
+    <div class="resultado-publico-title">🏆 Resultado del sorteo publicado</div>
+    <div class="resultado-publico-sub">Número${cfg.ganadores.length>1?'s':''} ganador${cfg.ganadores.length>1?'es':''}:</div>
+    <div class="resultado-publico-nums">${nums}</div>
+    ${boletosHtml}
+  `;
+  div.style.display='block';
+}
+function mostrarPopupGanadores(){
+  if(!cfg.ganadores||!cfg.ganadores.length) return;
+  const nums=cfg.ganadores.map(n=>pad(n)).join(', ');
+  const boletosGanadores=obtenerBoletosGanadores();
+  const extra=boletosGanadores.length ? `\nBoleto${boletosGanadores.length>1?'s':''} ganador${boletosGanadores.length>1?'es':''}: ${boletosGanadores.join(', ')}` : '';
+  mostrarPopupContenido('🏆 Resultado del sorteo', `Número${cfg.ganadores.length>1?'s':''} ganador${cfg.ganadores.length>1?'es':''}: ${nums}${extra}`, 'Entendido');
+}
+
 // ==========================================
 //  ADMIN RENDER
 // ==========================================
@@ -1199,6 +1431,10 @@ function renderAdmin(){
 function loadConfigUI(){
   document.getElementById('cfg-nombre').value=cfg.nombre;
   document.getElementById('cfg-precio').value=cfg.precio;
+  document.getElementById('cfg-logo-url').value=cfg.logoUrl||'';
+  document.getElementById('cfg-logo-width').value=cfg.logoWidth||160;
+  document.getElementById('cfg-logo-height').value=cfg.logoHeight||50;
+  actualizarPreviewLogoAdmin();
   document.getElementById('cfg-digitos').value=cfg.digitos;
   document.getElementById('cfg-nums-por-boleto').value=cfg.numsPorBoleto;
   document.getElementById('cfg-rango-publico').value=cfg.rangoPublicoMax||0;
@@ -1214,6 +1450,10 @@ function loadConfigUI(){
   document.getElementById('cfg-pp-link').value=cfg.ppLink||'';
   document.getElementById('cfg-fecha-sorteo').value=cfg.fechaSorteo||'';
   document.getElementById('cfg-nota-fecha').value=cfg.notaFecha||'';
+  document.getElementById('cfg-popup-enabled').checked=!!cfg.popupEnabled;
+  document.getElementById('cfg-popup-title').value=cfg.popupTitle||'Aviso importante';
+  document.getElementById('cfg-popup-message').value=cfg.popupMessage||'';
+  document.getElementById('cfg-popup-button').value=cfg.popupButton||'Entendido';
   if(cfg.ganadores&&cfg.ganadores.length)
     document.getElementById('cfg-ganadores').value=cfg.ganadores.join(', ');
 }
@@ -1247,10 +1487,20 @@ function togglePago(k, val){
 function guardarGanadores(){
   const raw=document.getElementById('cfg-ganadores').value.trim();
   if(!raw){setAlert('alert-ganadores','Ingresa al menos un número ganador.','err');return;}
-  cfg.ganadores=raw.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
-  guardarEstado();renderGrid();renderAdmin();
-  setAlert('alert-ganadores',`✅ ${cfg.ganadores.length} número(s) ganador(es) publicados.`,'ok');
-  enviarSheets({accion:'resultado',ganadores:cfg.ganadores.join(', '),fecha:new Date().toLocaleString('es-MX')});
+  const vistos=new Set();
+  cfg.ganadores=raw.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>{
+    if(isNaN(n)||vistos.has(n)) return false;
+    vistos.add(n);
+    return true;
+  });
+  guardarEstado();
+  renderGrid();
+  renderStats();
+  renderResultadoPublico();
+  if(adminLogado) renderAdmin();
+  setAlert('alert-ganadores',`✅ ${cfg.ganadores.length} número(s) ganador(es) publicados. Ya se muestran en la página pública.`,'ok');
+  mostrarPopupGanadores();
+  enviarSheets({accion:'resultado',ganadores:cfg.ganadores.map(n=>pad(n)).join(', '),fecha:new Date().toLocaleString('es-MX')});
 }
 
 function renderGanadoresList(){
@@ -1269,6 +1519,9 @@ function guardarConfig(){
   const cambio=nuevoDigitos!==cfg.digitos;
   cfg.nombre=document.getElementById('cfg-nombre').value||'Sorteo';
   cfg.precio=parseInt(document.getElementById('cfg-precio').value)||100;
+  cfg.logoUrl=document.getElementById('cfg-logo-url').value.trim();
+  cfg.logoWidth=Math.min(Math.max(parseInt(document.getElementById('cfg-logo-width').value)||160,24),220);
+  cfg.logoHeight=Math.min(Math.max(parseInt(document.getElementById('cfg-logo-height').value)||50,24),80);
   cfg.digitos=nuevoDigitos;
   cfg.numsPorBoleto=Math.min(parseInt(document.getElementById('cfg-nums-por-boleto').value)||1,total());
   cfg.rangoPublicoMax=parseInt(document.getElementById('cfg-rango-publico').value)||0;
@@ -1284,13 +1537,16 @@ function guardarConfig(){
   cfg.ppLink=document.getElementById('cfg-pp-link').value.trim();
   cfg.fechaSorteo=document.getElementById('cfg-fecha-sorteo').value;
   cfg.notaFecha=document.getElementById('cfg-nota-fecha').value.trim();
+  cfg.popupEnabled=document.getElementById('cfg-popup-enabled').checked;
+  cfg.popupTitle=document.getElementById('cfg-popup-title').value.trim()||'Aviso importante';
+  cfg.popupMessage=document.getElementById('cfg-popup-message').value.trim();
+  cfg.popupButton=document.getElementById('cfg-popup-button').value.trim()||'Entendido';
   if(cambio){boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};}
   initBoletos();
-  document.getElementById('sorteo-nombre').textContent=cfg.nombre;
-  document.getElementById('sorteo-sub').textContent=`$${cfg.precio.toLocaleString('es-MX')} por boleto · ${cfg.numsPorBoleto} número${cfg.numsPorBoleto>1?'s':''} por boleto`;
-  document.title=cfg.nombre+' — Sorteo';
-  guardarEstado();renderGrid();renderStats();renderAdmin();actualizarMetodosPagoVisibles();
+  actualizarCabecera();
+  guardarEstado();renderGrid();renderStats();renderResultadoPublico();renderAdmin();actualizarMetodosPagoVisibles();
   setAlert('alert-cfg',cambio?'✅ Guardado. Boletos reiniciados.':'✅ Configuración guardada.','ok');
+  if(cfg.popupEnabled) setTimeout(()=>mostrarPopup(false),250);
 }
 
 async function probarSheets(){
@@ -1306,7 +1562,7 @@ function reiniciarTodo(){
   if(urlAntes){enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX'),motivo:'Reinicio total con configuración'});}
   boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];
   localStorage.clear();
-  initBoletos();renderGrid();renderStats();renderAdmin();
+  initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();
   setAlert('alert-cfg','Todo reiniciado.','warn');
 }
 
@@ -1427,6 +1683,11 @@ function showPage(p){
     document.getElementById('page-'+id).style.display=id===p?'block':'none';
   });
   document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===['publico','buscar','admin'].indexOf(p)));
+  if(p==='publico'){
+    renderResultadoPublico();
+    // El anuncio debe mostrarse cada vez que se entra a la página pública, si está activo en Admin.
+    setTimeout(()=>mostrarPopup(false),250);
+  }
 }
 function setAlert(id,msg,type){
   const el=document.getElementById(id);
@@ -1441,13 +1702,12 @@ function setAlert(id,msg,type){
 // ==========================================
 cargarEstado();
 initBoletos();
+actualizarCabecera();
 renderGrid();
 renderStats();
+renderResultadoPublico();
 actualizarMetodosPagoVisibles();
-document.getElementById('sorteo-nombre').textContent=cfg.nombre;
-document.getElementById('sorteo-sub').textContent=`$${cfg.precio.toLocaleString('es-MX')} por boleto · ${cfg.numsPorBoleto} número${cfg.numsPorBoleto>1?'s':''} por boleto`;
-document.title=cfg.nombre+' — Sorteo';
+setTimeout(()=>mostrarPopup(false), 550);
 </script>
 </body>
 </html>
-
