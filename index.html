@@ -635,7 +635,7 @@ tr:hover td{background:var(--gray-50)}
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Boleto</th><th>Tipo</th><th>Números</th><th>Nombre</th><th>Pago</th><th>Comprobante</th><th>Ganador</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Boleto</th><th>Promoción</th><th>Números</th><th>Nombre</th><th>Pago</th><th>Comprobante</th><th>Ganador</th><th>Acciones</th></tr></thead>
           <tbody id="tbody-vendidos"></tbody>
         </table>
       </div>
@@ -656,7 +656,7 @@ tr:hover td{background:var(--gray-50)}
 let PASS_ADMIN = "admin123";
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
-  sheetsUrl:"", banco:"", clabe:"", titular:"", whatsappPago:"",
+  sheetsUrl:"https://script.google.com/macros/s/AKfycbzV71CTXGnKX046oBpEIhg5xrPuld7lz_1N4oU03UGbiWf1bmiHR2EMdzclgQAbly5b/exec", banco:"", clabe:"", titular:"", whatsappPago:"",
   mpLink:"", ppLink:"", mpEnabled:false, ppEnabled:false,
   logoUrl:"", logoWidth:160, logoHeight:50,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
@@ -1307,14 +1307,16 @@ async function confirmarCompra(){
       const principal=getNums(k);
       const extra=getExtra(k);
       const todosAsignados=[...principal,...extra];
-      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:'',comprobanteNombre:'',gratis:esGratis,promo:resumenCompra.promoAplicada||'',precioUnitario:esGratis?0:cfg.precio,totalCompra:resumenCompra.totalBruto,descuentoMonto:resumenCompra.descuentoMonto,subtotalCompra:resumenCompra.subtotal};
+      const promocionFila=resumenCompra.promoTipo==='descuento' ? '% Descuento' : (esGratis ? 'Generado por promoción' : 'Normal');
+      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:'',comprobanteNombre:'',gratis:esGratis,promo:resumenCompra.promoAplicada||'',promocionEtiqueta:promocionFila,tipoBoleto:promocionFila,precioUnitario:esGratis?0:cfg.precio,totalCompra:resumenCompra.totalBruto,descuentoMonto:resumenCompra.descuentoMonto,subtotalCompra:resumenCompra.subtotal};
       await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
         nums:todosAsignados.map(n=>pad(n)).join(', '),
         numsExtra:extra.map(n=>pad(n)).join(', '),
         fecha,
         total:resumenCompra.subtotal,
         precioUnitario:esGratis?0:cfg.precio,
-        tipoBoleto:esGratis?'Generado por promoción':'Normal',
+        tipoBoleto:promocionFila,
+        promocionEtiqueta:promocionFila,
         promoTipo:resumenCompra.promoTipo,
         promo:resumenCompra.promoAplicada||'',
         descuentoPct:resumenCompra.descuentoPct,
@@ -1557,6 +1559,22 @@ function mostrarPopupGanadores(){
 // ==========================================
 //  ADMIN RENDER
 // ==========================================
+
+function promocionEtiquetaBoleto(b){
+  const etiqueta=String(b?.promocionEtiqueta||b?.tipoBoleto||'').trim();
+  if(etiqueta) return etiqueta;
+  const promoTxt=String(b?.promo||'').toLowerCase();
+  if(b?.gratis) return 'Generado por promoción';
+  if(promoTxt.includes('descuento') || Number(b?.descuentoMonto||0)>0) return '% Descuento';
+  return 'Normal';
+}
+function badgePromocionBoleto(b){
+  const etiqueta=promocionEtiquetaBoleto(b);
+  if(etiqueta==='% Descuento') return '<span class="badge badge-amarillo" style="font-size:9px">% Descuento</span>';
+  if(etiqueta==='Generado por promoción') return '<span class="badge badge-verde" style="font-size:9px">Generado por promoción</span>';
+  return '<span class="badge badge-gris" style="font-size:9px">Normal</span>';
+}
+
 function numerosCompletosBoleto(b){
   const nums=[...(b?.nums||[]),...(b?.numsExtra||[])];
   const vistos=new Set();
@@ -1579,7 +1597,7 @@ function renderAdmin(){
     :vendidos.map(([k,b])=>`
       <tr>
         <td><strong>${k}</strong></td>
-        <td>${b.gratis?'<span class="badge badge-verde" style="font-size:9px">Gratis promo</span>':'<span class="badge badge-gris" style="font-size:9px">Compra</span>'}</td>
+        <td>${badgePromocionBoleto(b)}</td>
         <td><span class="badge badge-morado" style="font-size:10px">${numerosCompletosBoleto(b)}</span></td>
         <td>${b.nombre}<br><span style="font-size:11px;color:var(--text-muted)">${b.tel}</span></td>
         <td>
@@ -1884,7 +1902,7 @@ function aplicarEstadoCentral(data){
   (data.ventas||[]).forEach(v=>{
     const k=String(v.boleto||'').padStart(cfg.digitos,'0');
     if(!k) return;
-    boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};
+    boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',tipoBoleto:v.tipoBoleto||v.promocionEtiqueta||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};
   });
   (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0')));
   cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n));
@@ -1908,18 +1926,26 @@ async function cargarDesdeSheets(opts={}){
   }
   try{
     if(adminLogado&&!opts.silencioso){
+      setAlert('alert-cfg','⏳ Cargando datos centralizados desde Google Sheets...','info');
       const el=document.getElementById('sheets-status');
       if(el) el.innerHTML='<div class="alert alert-info">⏳ Cargando datos centralizados desde Google Sheets...</div>';
     }
     const url=sheetsUrlConParams({accion:'state'});
     const data=await cargarJsonp(url);
     aplicarEstadoCentral(data);
+    if(adminLogado&&!opts.silencioso){
+      const ventas=(data.ventas||[]).length;
+      const bloqueos=(data.bloqueados||[]).length;
+      setAlert('alert-cfg',`✅ Datos cargados desde Sheets. Ventas activas: ${ventas}. Bloqueados: ${bloqueos}.`,'ok');
+    }
     return true;
   }catch(e){
     console.error(e);
     if(adminLogado){
+      const msg=`❌ No se pudieron cargar datos desde Sheets. ${e.message||''}. Revisa que Apps Script esté publicado como Web App y que hayas seleccionado Nueva versión después de pegar el código v10.`;
+      setAlert('alert-cfg',msg,'err');
       const el=document.getElementById('sheets-status');
-      if(el) el.innerHTML=`<div class="alert alert-err">❌ No se pudieron cargar datos desde Sheets. ${e.message||''}</div>`;
+      if(el) el.innerHTML=`<div class="alert alert-err">${msg}</div>`;
     }
     return false;
   }
@@ -2014,3 +2040,4 @@ setTimeout(()=>mostrarPopup(false), 850);
 </script>
 </body>
 </html>
+
