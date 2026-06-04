@@ -202,6 +202,14 @@ tr:hover td{background:var(--gray-50)}
 /* == POP UP / ANUNCIO == */
 .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:240;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
 .popup-wrap{background:var(--white);border-radius:22px;max-width:430px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,0.28);overflow:hidden;animation:slideUp 0.32s ease}
+.popup-wrap.popup-html-mode{max-width:760px;background:transparent;box-shadow:none;overflow:visible;position:relative}
+.popup-wrap.popup-html-mode .popup-head,.popup-wrap.popup-html-mode .popup-foot{display:none}
+.popup-wrap.popup-html-mode .popup-body{padding:0;white-space:normal;background:transparent;color:inherit;font-size:inherit;line-height:normal}
+.popup-floating-close{display:none;position:absolute;top:-10px;right:-10px;background:#111827;color:#fff;border:2px solid #fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.popup-wrap.popup-html-mode .popup-floating-close{display:flex;align-items:center;justify-content:center}
+.popup-html-editor{font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.35;min-height:230px}
+.popup-admin-note{font-size:11px;color:var(--text-muted);margin-top:5px;line-height:1.35}
+
 .popup-head{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;padding:18px 22px;position:relative}
 .popup-title{font-family:var(--font-head);font-size:19px;font-weight:800;line-height:1.15;padding-right:32px}
 .popup-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
@@ -252,7 +260,8 @@ tr:hover td{background:var(--gray-50)}
 
 <!-- ================== POP UP / ANUNCIO ================== -->
 <div class="popup-overlay" id="popup-modal" style="display:none" onclick="cerrarPopup(event)">
-  <div class="popup-wrap" onclick="event.stopPropagation()">
+  <div class="popup-wrap" id="popup-wrap" onclick="event.stopPropagation()">
+    <button class="popup-floating-close" onclick="cerrarPopupDirecto()">✕</button>
     <div class="popup-head">
       <button class="popup-close" onclick="cerrarPopupDirecto()">✕</button>
       <div class="popup-title" id="popup-title">Aviso importante</div>
@@ -549,13 +558,36 @@ tr:hover td{background:var(--gray-50)}
       <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">POP UP / ANUNCIO PÚBLICO</div>
       <div class="form-row">
         <label class="check-row"><input type="checkbox" id="cfg-popup-enabled"><span>Activar pop up al abrir el sorteo</span></label>
-        <div><label>Título del pop up</label><input type="text" id="cfg-popup-title" placeholder="Aviso importante"></div>
+        <div>
+          <label>Tipo de pop up</label>
+          <select id="cfg-popup-mode" onchange="actualizarModoPopupAdmin()">
+            <option value="simple">Texto simple</option>
+            <option value="html">HTML personalizado / alto impacto</option>
+          </select>
+        </div>
       </div>
-      <div class="form-row full">
-        <div><label>Mensaje del pop up</label><textarea id="cfg-popup-message" rows="4" placeholder="Ej. Cambio de fecha, promoción especial, ganador anunciado, etc."></textarea></div>
+      <div id="popup-simple-fields">
+        <div class="form-row">
+          <div><label>Título del pop up</label><input type="text" id="cfg-popup-title" placeholder="Aviso importante"></div>
+          <div><label>Texto del botón</label><input type="text" id="cfg-popup-button" placeholder="Entendido"></div>
+        </div>
+        <div class="form-row full">
+          <div><label>Mensaje del pop up</label><textarea id="cfg-popup-message" rows="4" placeholder="Ej. Cambio de fecha, promoción especial, ganador anunciado, etc."></textarea></div>
+        </div>
+      </div>
+      <div id="popup-html-fields" style="display:none">
+        <div class="form-row full">
+          <div>
+            <label>HTML del pop up</label>
+            <textarea id="cfg-popup-html" class="popup-html-editor" rows="12" placeholder="Pega aquí tu diseño HTML personalizado"></textarea>
+            <div class="popup-admin-note">Usa esta opción solo con HTML creado por ti. No pegues scripts externos. Recomendado: ancho máximo 520–680 px.</div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:0;margin-bottom:8px">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="cargarEjemploPopupHtml()">✨ Cargar ejemplo de promoción</button>
+        </div>
       </div>
       <div class="form-row">
-        <div><label>Texto del botón</label><input type="text" id="cfg-popup-button" placeholder="Entendido"></div>
         <div style="display:flex;align-items:flex-end"><button type="button" class="btn btn-secondary" onclick="mostrarPopup(true)">👁️ Vista previa del pop up</button></div>
       </div>
       <div class="sep"></div>
@@ -645,7 +677,7 @@ tr:hover td{background:var(--gray-50)}
     <!-- SHEETS STATUS -->
     <div class="card">
       <div class="card-title"><div class="card-icon">📊</div>Estado Google Sheets</div>
-      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v12 reinstalación limpia / hoja nueva Control_Seguimiento_Sorteo: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
+      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v13 popup simple/HTML / hoja Control_Seguimiento_Sorteo: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
     </div>
   </div>
 </div>
@@ -655,14 +687,14 @@ tr:hover td{background:var(--gray-50)}
 //  ESTADO
 // ==========================================
 let PASS_ADMIN = "admin123";
-const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbxiOXLRWl_4aSV9N09Pfsy3bfcJcjk6NSJDKa1uzuY4ooxFx-CnqGLOiy_8UYwjX70hmQ/exec"; // V12 final: URL fija de Apps Script funcionando
+const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbxiOXLRWl_4aSV9N09Pfsy3bfcJcjk6NSJDKa1uzuY4ooxFx-CnqGLOiy_8UYwjX70hmQ/exec"; // V13: URL fija de Apps Script funcionando
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
   sheetsUrl:SHEETS_URL_FIJA, banco:"", clabe:"", titular:"", whatsappPago:"",
   mpLink:"", ppLink:"", mpEnabled:false, ppEnabled:false,
   logoUrl:"", logoWidth:160, logoHeight:50,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
-  popupEnabled:false, popupTitle:"Aviso importante", popupMessage:"", popupButton:"Entendido", popupLastShownKey:"",
+  popupEnabled:false, popupMode:"simple", popupTitle:"Aviso importante", popupMessage:"", popupHtml:"", popupButton:"Entendido", popupLastShownKey:"",
   // Promociones: solo una puede estar activa a la vez: none, descuento o gratis.
   promoTipo:"none",
   promoDescuentoMin:4,
@@ -949,28 +981,119 @@ function quitarLogoAdmin(){
 function htmlEscape(str){
   return String(str??'').replace(/[&<>'"]/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[ch]));
 }
-function mostrarPopupContenido(titulo, mensaje, boton){
+
+function popupHtmlEjemplo(){
+  return `<div style="
+  max-width: 520px;
+  margin: 20px auto;
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fff7ed, #ffffff);
+  border: 2px solid #f97316;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+">
+
+  <div style="font-size: 42px; margin-bottom: 8px;">
+    🎟️✨
+  </div>
+
+  <div style="
+    font-size: 18px;
+    color: #7c2d12;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  ">
+    Promoción especial
+  </div>
+
+  <div style="
+    font-size: 30px;
+    line-height: 1.25;
+    color: #111827;
+    font-weight: 800;
+    margin-bottom: 14px;
+  ">
+    Compra <span style="color:#ea580c;">5 boletos o más</span>
+  </div>
+
+  <div style="
+    font-size: 20px;
+    color: #374151;
+    line-height: 1.4;
+    margin-bottom: 18px;
+  ">
+    en una sola exhibición y recibe
+  </div>
+
+  <div style="
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: #ea580c;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: .5px;
+  ">
+    🎁 1 BOLETO ADICIONAL GRATIS
+  </div>
+
+</div>`;
+}
+
+function cargarEjemploPopupHtml(){
+  const area=document.getElementById('cfg-popup-html');
+  if(area) area.value=popupHtmlEjemplo();
+  const mode=document.getElementById('cfg-popup-mode');
+  if(mode) mode.value='html';
+  actualizarModoPopupAdmin();
+}
+
+function actualizarModoPopupAdmin(){
+  const mode=(document.getElementById('cfg-popup-mode')?.value)||'simple';
+  const simple=document.getElementById('popup-simple-fields');
+  const htmlFields=document.getElementById('popup-html-fields');
+  if(simple) simple.style.display=mode==='html'?'none':'block';
+  if(htmlFields) htmlFields.style.display=mode==='html'?'block':'none';
+}
+
+function mostrarPopupContenido(titulo, mensaje, boton, modo='simple', html=''){
   const modal=document.getElementById('popup-modal');
+  const wrap=document.getElementById('popup-wrap');
   const title=document.getElementById('popup-title');
   const msg=document.getElementById('popup-message');
   const btn=document.getElementById('popup-btn');
-  if(title) title.textContent=titulo||'Aviso importante';
-  if(msg) msg.innerHTML=htmlEscape(mensaje||'Aviso del sorteo').replace(/\n/g,'<br>');
-  if(btn) btn.textContent=boton||'Entendido';
+  const esHtml=modo==='html' && String(html||'').trim();
+  if(wrap) wrap.classList.toggle('popup-html-mode', !!esHtml);
+  if(esHtml){
+    if(msg) msg.innerHTML=html;
+  }else{
+    if(title) title.textContent=titulo||'Aviso importante';
+    if(msg) msg.innerHTML=htmlEscape(mensaje||'Aviso del sorteo').replace(/\n/g,'<br>');
+    if(btn) btn.textContent=boton||'Entendido';
+  }
   if(modal) modal.style.display='flex';
 }
 function mostrarPopup(forzar){
   if(!forzar && !cfg.popupEnabled) return;
+  let modo=cfg.popupMode||'simple';
   let titulo=cfg.popupTitle||'Aviso importante';
   let mensaje=cfg.popupMessage||'Aviso del sorteo';
+  let html=cfg.popupHtml||'';
   let boton=cfg.popupButton||'Entendido';
   // Vista previa desde Admin: usa lo que está escrito en los campos aunque aún no se haya guardado.
   if(forzar && document.getElementById('cfg-popup-title')){
+    modo=document.getElementById('cfg-popup-mode')?.value||modo;
     titulo=document.getElementById('cfg-popup-title').value.trim()||titulo;
     mensaje=document.getElementById('cfg-popup-message').value.trim()||mensaje;
+    html=document.getElementById('cfg-popup-html')?.value||html;
     boton=document.getElementById('cfg-popup-button').value.trim()||boton;
   }
-  mostrarPopupContenido(titulo,mensaje,boton);
+  mostrarPopupContenido(titulo,mensaje,boton,modo,html);
 }
 function cerrarPopup(event){
   if(event && event.target && event.target.id!=='popup-modal') return;
@@ -1659,9 +1782,12 @@ function loadConfigUI(){
   document.getElementById('cfg-fecha-sorteo').value=cfg.fechaSorteo||'';
   document.getElementById('cfg-nota-fecha').value=cfg.notaFecha||'';
   document.getElementById('cfg-popup-enabled').checked=!!cfg.popupEnabled;
+  document.getElementById('cfg-popup-mode').value=cfg.popupMode||'simple';
   document.getElementById('cfg-popup-title').value=cfg.popupTitle||'Aviso importante';
   document.getElementById('cfg-popup-message').value=cfg.popupMessage||'';
+  document.getElementById('cfg-popup-html').value=cfg.popupHtml||'';
   document.getElementById('cfg-popup-button').value=cfg.popupButton||'Entendido';
+  actualizarModoPopupAdmin();
   if(cfg.ganadores&&cfg.ganadores.length)
     document.getElementById('cfg-ganadores').value=cfg.ganadores.join(', ');
 }
@@ -1752,8 +1878,10 @@ function guardarConfig(){
   cfg.fechaSorteo=document.getElementById('cfg-fecha-sorteo').value;
   cfg.notaFecha=document.getElementById('cfg-nota-fecha').value.trim();
   cfg.popupEnabled=document.getElementById('cfg-popup-enabled').checked;
+  cfg.popupMode=document.getElementById('cfg-popup-mode').value||'simple';
   cfg.popupTitle=document.getElementById('cfg-popup-title').value.trim()||'Aviso importante';
   cfg.popupMessage=document.getElementById('cfg-popup-message').value.trim();
+  cfg.popupHtml=document.getElementById('cfg-popup-html').value.trim();
   cfg.popupButton=document.getElementById('cfg-popup-button').value.trim()||'Entendido';
   if(cambio){boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();}
   else { actualizarPromoGratis(); }
