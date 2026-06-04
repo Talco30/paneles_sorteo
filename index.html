@@ -587,6 +587,7 @@ tr:hover td{background:var(--gray-50)}
       <div class="btn-row">
         <button class="btn btn-primary" onclick="guardarConfig()">💾 Guardar ajustes</button>
         <button class="btn btn-secondary" onclick="probarSheets()">🔗 Probar Sheets</button>
+        <button class="btn btn-secondary" onclick="abrirPruebaPing()">🧪 Abrir Ping</button>
         <button class="btn btn-secondary" onclick="cargarDesdeSheets({silencioso:false})">🔄 Cargar datos desde Sheets</button>
         <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="reiniciarTodo()">⚠️ Reiniciar todo y configuración</button>
       </div>
@@ -644,7 +645,7 @@ tr:hover td{background:var(--gray-50)}
     <!-- SHEETS STATUS -->
     <div class="card">
       <div class="card-title"><div class="card-icon">📊</div>Estado Google Sheets</div>
-      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v9 centralizado: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
+      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v11 reinstalación limpia: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
     </div>
   </div>
 </div>
@@ -654,7 +655,7 @@ tr:hover td{background:var(--gray-50)}
 //  ESTADO
 // ==========================================
 let PASS_ADMIN = "admin123";
-const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbzV71CTXGnKX046oBpEIhg5xrPuld7lz_1N4oU03UGbiWf1bmiHR2EMdzclgQAbly5b/exec";
+const SHEETS_URL_FIJA = ""; // V11: pega aquí la NUEVA URL de Aplicación web cuando ya funcione. Ej: https://script.google.com/macros/s/XXX/exec
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
   sheetsUrl:SHEETS_URL_FIJA, banco:"", clabe:"", titular:"", whatsappPago:"",
@@ -1767,10 +1768,18 @@ function guardarConfig(){
 
 async function probarSheets(){
   if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;}
-  setAlert('alert-cfg','Enviando prueba...','info');
+  setAlert('alert-cfg','⏳ Probando conexión con Apps Script v11...','info');
   await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')});
-  setAlert('alert-cfg','✅ Solicitud enviada. Intentando leer estado centralizado...','ok');
+  setAlert('alert-cfg','✅ Envío realizado. Ahora intentando leer estado centralizado desde Sheets...','ok');
   setTimeout(()=>cargarDesdeSheets({silencioso:false}),900);
+}
+
+function abrirPruebaPing(){
+  const u=(cfg.sheetsUrl||'').trim();
+  if(!u){setAlert('alert-cfg','Primero pega la URL de Aplicación web.','err');return;}
+  const ping=u+(u.includes('?')?'&':'?')+'accion=ping';
+  window.open(ping,'_blank');
+  setAlert('alert-cfg','Abrí la prueba Ping en otra pestaña. Debe mostrar JSON con ok:true y version:v11.','info');
 }
 
 function reiniciarTodo(){
@@ -1946,7 +1955,7 @@ async function cargarDesdeSheets(opts={}){
   }catch(e){
     console.error(e);
     if(adminLogado){
-      const msg=`❌ No se pudieron cargar datos desde Sheets. ${e.message||''}. Revisa que Apps Script esté publicado como Web App y que hayas seleccionado Nueva versión después de pegar el código v10.`;
+      const msg=`❌ No se pudieron cargar datos desde Sheets. ${e.message||''}. URL usada: ${cfg.sheetsUrl||'sin URL'}. Revisa que Apps Script esté publicado como Web App, acceso Cualquier usuario y que Ping responda ok:true.`;
       setAlert('alert-cfg',msg,'err');
       const el=document.getElementById('sheets-status');
       if(el) el.innerHTML=`<div class="alert alert-err">${msg}</div>`;
