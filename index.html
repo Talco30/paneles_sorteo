@@ -645,7 +645,7 @@ tr:hover td{background:var(--gray-50)}
     <!-- SHEETS STATUS -->
     <div class="card">
       <div class="card-title"><div class="card-icon">📊</div>Estado Google Sheets</div>
-      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v11 reinstalación limpia: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
+      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v12 reinstalación limpia / hoja nueva Control_Seguimiento_Sorteo: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
     </div>
   </div>
 </div>
@@ -655,7 +655,7 @@ tr:hover td{background:var(--gray-50)}
 //  ESTADO
 // ==========================================
 let PASS_ADMIN = "admin123";
-const SHEETS_URL_FIJA = ""; // V11: pega aquí la NUEVA URL de Aplicación web cuando ya funcione. Ej: https://script.google.com/macros/s/XXX/exec
+const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbxiOXLRWl_4aSV9N09Pfsy3bfcJcjk6NSJDKa1uzuY4ooxFx-CnqGLOiy_8UYwjX70hmQ/exec"; // V12 final: URL fija de Apps Script funcionando
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
   sheetsUrl:SHEETS_URL_FIJA, banco:"", clabe:"", titular:"", whatsappPago:"",
@@ -1768,7 +1768,7 @@ function guardarConfig(){
 
 async function probarSheets(){
   if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;}
-  setAlert('alert-cfg','⏳ Probando conexión con Apps Script v11...','info');
+  setAlert('alert-cfg','⏳ Probando conexión con Apps Script v12...','info');
   await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')});
   setAlert('alert-cfg','✅ Envío realizado. Ahora intentando leer estado centralizado desde Sheets...','ok');
   setTimeout(()=>cargarDesdeSheets({silencioso:false}),900);
@@ -1779,7 +1779,7 @@ function abrirPruebaPing(){
   if(!u){setAlert('alert-cfg','Primero pega la URL de Aplicación web.','err');return;}
   const ping=u+(u.includes('?')?'&':'?')+'accion=ping';
   window.open(ping,'_blank');
-  setAlert('alert-cfg','Abrí la prueba Ping en otra pestaña. Debe mostrar JSON con ok:true y version:v11.','info');
+  setAlert('alert-cfg','Abrí la prueba Ping en otra pestaña. Debe mostrar JSON con ok:true y version:v12.','info');
 }
 
 function reiniciarTodo(){
