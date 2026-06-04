@@ -654,9 +654,10 @@ tr:hover td{background:var(--gray-50)}
 //  ESTADO
 // ==========================================
 let PASS_ADMIN = "admin123";
+const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbzV71CTXGnKX046oBpEIhg5xrPuld7lz_1N4oU03UGbiWf1bmiHR2EMdzclgQAbly5b/exec";
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
-  sheetsUrl:"https://script.google.com/macros/s/AKfycbzV71CTXGnKX046oBpEIhg5xrPuld7lz_1N4oU03UGbiWf1bmiHR2EMdzclgQAbly5b/exec", banco:"", clabe:"", titular:"", whatsappPago:"",
+  sheetsUrl:SHEETS_URL_FIJA, banco:"", clabe:"", titular:"", whatsappPago:"",
   mpLink:"", ppLink:"", mpEnabled:false, ppEnabled:false,
   logoUrl:"", logoWidth:160, logoHeight:50,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
@@ -696,6 +697,8 @@ function guardarEstado(){
 function cargarEstado(){
   try{
     const c=localStorage.getItem('s_cfg'); if(c) cfg={...cfg,...JSON.parse(c)};
+    // En versión hospedada, la URL integrada debe ganar sobre cualquier localStorage viejo.
+    if(SHEETS_URL_FIJA) cfg.sheetsUrl = SHEETS_URL_FIJA;
     const b=localStorage.getItem('s_boletos');
     if(b){ for(const [k,v] of Object.entries(JSON.parse(b))) boletos[k]=v; }
     const bl=localStorage.getItem('s_bloq'); if(bl) bloqueados=new Set(JSON.parse(bl));
@@ -1736,6 +1739,7 @@ function guardarConfig(){
   cfg.promoGratisMin=Math.max(1,parseInt(document.getElementById('cfg-promo-gratis-min').value)||10);
   cfg.promoGratisCantidad=Math.max(1,parseInt(document.getElementById('cfg-promo-gratis-cantidad').value)||2);
   cfg.sheetsUrl=document.getElementById('cfg-sheets-url').value.trim();
+  if(SHEETS_URL_FIJA) cfg.sheetsUrl = SHEETS_URL_FIJA;
   cfg.banco=document.getElementById('cfg-banco').value.trim();
   cfg.clabe=document.getElementById('cfg-clabe').value.trim();
   cfg.titular=document.getElementById('cfg-titular').value.trim();
@@ -1892,7 +1896,7 @@ function aplicarEstadoCentral(data){
   const urlActual=cfg.sheetsUrl;
   const cfgCentral=coercionarConfigCentral(data.config||{});
   cfg={...cfg,...cfgCentral};
-  if(!cfg.sheetsUrl) cfg.sheetsUrl=urlActual;
+  cfg.sheetsUrl = SHEETS_URL_FIJA || cfg.sheetsUrl || urlActual;
   boletos={};
   bloqueados=new Set();
   seleccionados=[];
@@ -2040,4 +2044,3 @@ setTimeout(()=>mostrarPopup(false), 850);
 </script>
 </body>
 </html>
-
