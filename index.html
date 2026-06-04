@@ -500,6 +500,44 @@ tr:hover td{background:var(--gray-50)}
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Ej: 3 → cada boleto vendido recibe además 3 números del 250–999.</div>
         </div>
       </div>
+      <div class="sep"></div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">PROMOCIONES / PAQUETES</div>
+      <div class="form-row">
+        <div>
+          <label>Promoción activa</label>
+          <select id="cfg-promo-tipo">
+            <option value="none">Ninguna promoción</option>
+            <option value="descuento">Descuento por volumen</option>
+            <option value="gratis">Boletos gratis por paquete</option>
+          </select>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Solo una promoción se aplica por compra. Puedes dejarlo en Ninguna.</div>
+        </div>
+        <div>
+          <label>Resumen de la promoción</label>
+          <div id="promo-admin-resumen" class="alert alert-info" style="font-size:12px;margin:0">Sin promoción activa.</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Escenario 1: descuento desde cuántos boletos</label>
+          <input type="number" id="cfg-promo-desc-min" min="1" value="4">
+        </div>
+        <div>
+          <label>Escenario 1: % descuento</label>
+          <input type="number" id="cfg-promo-desc-pct" min="0" max="100" value="10">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Escenario 2: compra mínima de boletos</label>
+          <input type="number" id="cfg-promo-gratis-min" min="1" value="10">
+        </div>
+        <div>
+          <label>Escenario 2: boletos gratis</label>
+          <input type="number" id="cfg-promo-gratis-cantidad" min="1" value="2">
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Los boletos gratis se asignan automáticamente al azar e incluyen sus números extras del rango reservado.</div>
+        </div>
+      </div>
       <div class="form-row">
         <div><label>Fecha tentativa del sorteo</label><input type="date" id="cfg-fecha-sorteo"></div>
         <div><label>Nota sobre fecha (ej. "sujeto a venta total")</label><input type="text" id="cfg-nota-fecha" placeholder="Sujeto a completar venta"></div>
@@ -619,14 +657,22 @@ let cfg = {
   logoUrl:"", logoWidth:160, logoHeight:50,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
   popupEnabled:false, popupTitle:"Aviso importante", popupMessage:"", popupButton:"Entendido", popupLastShownKey:"",
+  // Promociones: solo una puede estar activa a la vez: none, descuento o gratis.
+  promoTipo:"none",
+  promoDescuentoMin:4,
+  promoDescuentoPct:10,
+  promoGratisMin:10,
+  promoGratisCantidad:2,
   ganadores:[],
   rangoPublicoMax: 0,   
   extrasReservado: 0    
 };
 let boletos = {};
 let bloqueados = new Set();
-let seleccionados = []; // array de boletos seleccionados (multi)
-let numerosAsignadosPorBoleto = {}; // {boleto: [nums]}
+let seleccionados = []; // boletos elegidos/pagados por el comprador
+let numerosAsignadosPorBoleto = {}; // {boleto: {principal:[], extra:[]}}
+let boletosPromoGratis = []; // boletos públicos asignados gratis por promoción
+let numerosPromoPorBoleto = {}; // {boleto gratis: {principal:[], extra:[]}}
 let adminLogado = false;
 let compraProcesando = false;
 
@@ -689,17 +735,6 @@ function obtenerNumerosVendidosAsignadosLocal(){
   }
   return usados;
 }
-function obtenerNumerosSeleccionadosActuales(){
-  const usados=new Set();
-  for(const sk of seleccionados){
-    agregarNumerosASet(sk,usados);
-    if(numerosAsignadosPorBoleto[sk]){
-      agregarNumerosASet(numerosAsignadosPorBoleto[sk].principal,usados);
-      agregarNumerosASet(numerosAsignadosPorBoleto[sk].extra,usados);
-    }
-  }
-  return usados;
-}
 function numeroYaEntregadoLocal(k){
   return obtenerNumerosVendidosAsignadosLocal().has(normalizarNumeroId(k));
 }
@@ -719,6 +754,125 @@ function numerosMostradosPorBoleto(){
   const base=Math.max(1, parseInt(cfg.numsPorBoleto)||1);
   const extras=Math.max(0, parseInt(cfg.extrasReservado)||0);
   return base + extras;
+}
+
+function promoActiva(){
+  return cfg.promoTipo==='descuento' || cfg.promoTipo==='gratis' ? cfg.promoTipo : 'none';
+}
+function promoDescuentoPctActual(){
+  if(promoActiva()!=='descuento') return 0;
+  const min=Math.max(1, parseInt(cfg.promoDescuentoMin)||1);
+  const pct=Math.min(Math.max(parseFloat(cfg.promoDescuentoPct)||0,0),100);
+  return seleccionados.length>=min ? pct : 0;
+}
+function promoGratisRequeridos(){
+  if(promoActiva()!=='gratis') return 0;
+  const min=Math.max(1, parseInt(cfg.promoGratisMin)||1);
+  const cantidad=Math.max(1, parseInt(cfg.promoGratisCantidad)||1);
+  return seleccionados.length>=min ? cantidad : 0;
+}
+function descripcionPromoActual(){
+  if(promoActiva()==='descuento'){
+    return `Compra ${cfg.promoDescuentoMin||1} boleto${(cfg.promoDescuentoMin||1)>1?'s':''} o más y recibe ${cfg.promoDescuentoPct||0}% de descuento.`;
+  }
+  if(promoActiva()==='gratis'){
+    return `Compra ${cfg.promoGratisMin||1} boleto${(cfg.promoGratisMin||1)>1?'s':''} o más y recibe ${cfg.promoGratisCantidad||1} boleto${(cfg.promoGratisCantidad||1)>1?'s':''} gratis.`;
+  }
+  return 'Sin promoción activa.';
+}
+function calcularResumenCompra(){
+  const pagados=seleccionados.length;
+  const gratis=boletosPromoGratis.length;
+  const totalBruto=pagados*(parseFloat(cfg.precio)||0);
+  const descuentoPct=promoDescuentoPctActual();
+  const descuentoMonto=Math.round((totalBruto*descuentoPct/100)*100)/100;
+  const subtotal=Math.max(0, Math.round((totalBruto-descuentoMonto)*100)/100);
+  const promoTipo=promoActiva();
+  let promoAplicada='';
+  if(promoTipo==='descuento' && descuentoPct>0) promoAplicada=`Descuento ${descuentoPct}% por volumen`;
+  if(promoTipo==='gratis' && gratis>0) promoAplicada=`${gratis} boleto${gratis>1?'s':''} gratis por paquete`;
+  return {pagados,gratis,totalBoletos:pagados+gratis,totalBruto,descuentoPct,descuentoMonto,subtotal,promoTipo,promoAplicada,descripcion:descripcionPromoActual(),boletosPagados:[...seleccionados],boletosGratis:[...boletosPromoGratis]};
+}
+function agregarNumerosDeTicketASet(k, data, set){
+  agregarNumerosASet(k,set);
+  if(data){
+    agregarNumerosASet(data.principal,set);
+    agregarNumerosASet(data.extra,set);
+  }
+}
+function obtenerNumerosSeleccionadosActuales(){
+  const usados=new Set();
+  for(const sk of seleccionados){
+    agregarNumerosDeTicketASet(sk,numerosAsignadosPorBoleto[sk],usados);
+  }
+  for(const pk of boletosPromoGratis){
+    agregarNumerosDeTicketASet(pk,numerosPromoPorBoleto[pk],usados);
+  }
+  return usados;
+}
+function generarNumerosDesdeSet(k, usados){
+  const principal=parseInt(k,10);
+  const nums=[principal];
+  const principalKey=normalizarNumeroId(principal);
+  if(usados.has(principalKey)) throw new Error(`El número ${pad(principal)} ya fue asignado y no puede repetirse.`);
+  usados.add(principalKey);
+  if(cfg.extrasReservado>0 && totalPublico()<total()){
+    const disponiblesReservado=rangoReservadoDisponibles(usados);
+    if(disponiblesReservado.length<cfg.extrasReservado){
+      throw new Error(`No hay suficientes números extras únicos disponibles. Disponibles: ${disponiblesReservado.length}, requeridos: ${cfg.extrasReservado}.`);
+    }
+    const mezclados=[...disponiblesReservado].sort(()=>Math.random()-0.5);
+    const extras=mezclados.slice(0,cfg.extrasReservado).sort((a,b)=>a-b);
+    extras.forEach(n=>usados.add(normalizarNumeroId(n)));
+    return {principal:nums,extra:extras};
+  }
+  return {principal:nums,extra:[]};
+}
+function limpiarPromoGratis(){
+  boletosPromoGratis=[];
+  numerosPromoPorBoleto={};
+}
+function actualizarPromoGratis(){
+  limpiarPromoGratis();
+  const requeridos=promoGratisRequeridos();
+  if(requeridos<=0) return;
+  const usados=obtenerNumerosVendidosAsignadosLocal();
+  for(const sk of seleccionados){
+    agregarNumerosDeTicketASet(sk,numerosAsignadosPorBoleto[sk],usados);
+  }
+  const disponibles=[];
+  for(let i=0;i<totalPublico();i++){
+    const k=pad(i);
+    if(bloqueados.has(k)) continue;
+    if(boletos[k]?.estado==='vendido') continue;
+    if(seleccionados.includes(k)) continue;
+    if(usados.has(normalizarNumeroId(k))) continue;
+    disponibles.push(k);
+  }
+  const mezclados=[...disponibles].sort(()=>Math.random()-0.5);
+  for(const k of mezclados){
+    if(boletosPromoGratis.length>=requeridos) break;
+    try{
+      const gen=generarNumerosDesdeSet(k,usados);
+      boletosPromoGratis.push(k);
+      numerosPromoPorBoleto[k]=gen;
+    }catch(e){}
+  }
+  if(boletosPromoGratis.length<requeridos){
+    setAlert('alert-compra',`La promoción requiere ${requeridos} boleto(s) gratis, pero solo hay ${boletosPromoGratis.length} disponible(s) sin repetir números.`,'warn');
+  }
+}
+function actualizarResumenPromoAdmin(){
+  const div=document.getElementById('promo-admin-resumen');
+  if(!div) return;
+  const tipo=(document.getElementById('cfg-promo-tipo')?.value)||cfg.promoTipo||'none';
+  const dMin=parseInt(document.getElementById('cfg-promo-desc-min')?.value)||cfg.promoDescuentoMin||4;
+  const dPct=parseFloat(document.getElementById('cfg-promo-desc-pct')?.value)||cfg.promoDescuentoPct||10;
+  const gMin=parseInt(document.getElementById('cfg-promo-gratis-min')?.value)||cfg.promoGratisMin||10;
+  const gQty=parseInt(document.getElementById('cfg-promo-gratis-cantidad')?.value)||cfg.promoGratisCantidad||2;
+  if(tipo==='descuento') div.innerHTML=`Compra ${dMin} boleto${dMin>1?'s':''} o más → ${dPct}% de descuento.`;
+  else if(tipo==='gratis') div.innerHTML=`Compra ${gMin} boleto${gMin>1?'s':''} o más → ${gQty} boleto${gQty>1?'s':''} gratis, cada uno con sus extras.`;
+  else div.innerHTML='Sin promoción activa.';
 }
 function fechaSorteoTextoCorto(){
   if(!cfg.fechaSorteo) return 'Fecha tentativa: por definir';
@@ -832,6 +986,10 @@ function setCompraProcesando(activo, mensaje){
   }
 }
 
+function boletoVacio(){
+  return {estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:'',gratis:false,promo:'',precioUnitario:0,totalCompra:0,descuentoMonto:0,subtotalCompra:0};
+}
+
 // Rango p?blico: cu?ntos boletos se muestran en la grilla al cliente
 function totalPublico(){
   if(cfg.rangoPublicoMax>0) return Math.min(cfg.rangoPublicoMax, total());
@@ -854,7 +1012,7 @@ function initBoletos(){
   const tp = totalPublico();
   for(let i=0;i<tp;i++){
     const k=pad(i);
-    if(!boletos[k]) boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:''};
+    if(!boletos[k]) boletos[k]=boletoVacio();
   }
 }
 
@@ -875,7 +1033,7 @@ function renderGrid(){
     if(bloqueados.has(k)) cls+=' bloqueado';
     else if(b?.estado==='vendido') cls+= esGanador?' ganador':' vendido';
     else if(usadoComoNumeroAsignado) cls+=' bloqueado';
-    else if(seleccionados.includes(k)) cls+=' seleccionado';
+    else if(seleccionados.includes(k)||boletosPromoGratis.includes(k)) cls+=' seleccionado';
     const btn=document.createElement('button');
     btn.className=cls; btn.textContent=k; btn.title=(usadoComoNumeroAsignado && b?.estado!=='vendido')?'Número ya asignado':k;
     btn.onclick=()=>seleccionarBoleto(k);
@@ -902,6 +1060,7 @@ function actualizarContadorSel(){
 
 function seleccionarBoleto(k){
   if(compraProcesando) return;
+  if(boletosPromoGratis.includes(k)){setAlert('alert-compra',`El boleto ${k} fue asignado gratis por la promoción.`, 'info');return;}
   if(bloqueados.has(k)||boletos[k]?.estado==='vendido') return;
   const idx=seleccionados.indexOf(k);
   if(idx>=0){
@@ -927,39 +1086,16 @@ function seleccionarBoleto(k){
       return;
     }
   }
+  actualizarPromoGratis();
   renderGrid();
   actualizarFormCompra();
 }
 
 function generarNumeros(k){
-  // Número principal: el boleto elegido.
-  const principal = parseInt(k, 10);
-  const nums = [principal];
-
-  // Regla crítica: ningún número puede repetirse.
-  // Se excluyen todos los números ya vendidos/asignados y también los que
-  // ya están temporalmente seleccionados en esta misma compra.
   const usados = obtenerNumerosVendidosAsignadosLocal();
   const usadosSeleccion = obtenerNumerosSeleccionadosActuales();
   usadosSeleccion.forEach(n=>usados.add(n));
-
-  const principalKey=normalizarNumeroId(principal);
-  if(usados.has(principalKey)){
-    throw new Error(`El número ${pad(principal)} ya fue asignado y no puede repetirse.`);
-  }
-  usados.add(principalKey);
-
-  // Números extra del rango reservado.
-  if(cfg.extrasReservado > 0 && totalPublico() < total()){
-    const disponiblesReservado = rangoReservadoDisponibles(usados);
-    if(disponiblesReservado.length < cfg.extrasReservado){
-      throw new Error(`No hay suficientes números extras únicos disponibles. Disponibles: ${disponiblesReservado.length}, requeridos: ${cfg.extrasReservado}.`);
-    }
-    const mezclados = [...disponiblesReservado].sort(()=>Math.random()-0.5);
-    const extras = mezclados.slice(0, cfg.extrasReservado);
-    return { principal: nums, extra: extras.sort((a,b)=>a-b) };
-  }
-  return { principal: nums, extra: [] };
+  return generarNumerosDesdeSet(k, usados);
 }
 
 function elegirAleatorio(){
@@ -969,7 +1105,7 @@ function elegirAleatorio(){
   const disponibles=[];
   for(let i=0;i<tp;i++){
     const k=pad(i);
-    if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)&&!numeroYaEntregadoLocal(k)) disponibles.push(k);
+    if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)&&!boletosPromoGratis.includes(k)&&!numeroYaEntregadoLocal(k)) disponibles.push(k);
   }
   if(!disponibles.length){alert('No hay boletos disponibles.');return;}
   const libresNecesarios=Math.min(cantidad, 10-seleccionados.length);
@@ -988,6 +1124,7 @@ function elegirAleatorio(){
       ultimoError=e.message||String(e);
     }
   }
+  actualizarPromoGratis();
   if(agregados===0){
     setAlert('alert-compra',ultimoError||'No hay suficientes números únicos disponibles.','err');
     return;
@@ -1000,43 +1137,68 @@ function elegirAleatorio(){
   document.querySelector('.boleto.seleccionado')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
-function getNums(k){ return (numerosAsignadosPorBoleto[k]||{principal:[parseInt(k,10)],extra:{}}).principal||[parseInt(k,10)]; }
-function getExtra(k){ return (numerosAsignadosPorBoleto[k]||{extra:[]}).extra||[]; }
+function getNums(k){
+  const data=numerosAsignadosPorBoleto[k]||numerosPromoPorBoleto[k]||{principal:[parseInt(k,10)],extra:{}};
+  return data.principal||[parseInt(k,10)];
+}
+function getExtra(k){
+  const data=numerosAsignadosPorBoleto[k]||numerosPromoPorBoleto[k]||{extra:[]};
+  return data.extra||[];
+}
 
 function actualizarFormCompra(){
   const fc=document.getElementById('form-compra');
   if(seleccionados.length===0){fc.style.display='none';return;}
   fc.style.display='block';
-  const total_pagar=seleccionados.length*cfg.precio;
+  const resumen=calcularResumenCompra();
   const tieneExtras=cfg.extrasReservado>0 && totalPublico()<total();
-  let resumenHtml=seleccionados.map(k=>{
+  const renderLinea=(k,gratis=false)=>{
     const principal=getNums(k);
     const extra=getExtra(k);
     const extraHtml=tieneExtras&&extra.length>0
       ?`<span style="color:var(--teal);font-size:11px"> + extras: ${extra.map(n=>pad(n)).join(', ')}</span>`
       :'';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--gray-200);font-size:13px">
-      <span>Boleto <strong>${k}</strong></span>
+      <span>Boleto <strong>${k}</strong> ${gratis?'<span class="badge badge-verde" style="font-size:9px">Gratis promo</span>':''}</span>
       <span style="color:var(--text-muted);font-size:12px">Núm: ${principal.map(n=>pad(n)).join(', ')}${extraHtml}</span>
     </div>`;
-  }).join('');
+  };
+  let resumenHtml=seleccionados.map(k=>renderLinea(k,false)).join('');
+  if(boletosPromoGratis.length){
+    resumenHtml += `<div style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--teal);margin:8px 0 4px">🎁 Boletos gratis por promoción</div>`;
+    resumenHtml += boletosPromoGratis.map(k=>renderLinea(k,true)).join('');
+  }
+  const promoBox = resumen.promoAplicada
+    ? `<div class="alert alert-ok" style="margin:10px 0 0;font-size:12px">🎁 Promoción aplicada: <strong>${resumen.promoAplicada}</strong></div>`
+    : (promoActiva()!=='none'?`<div class="alert alert-info" style="margin:10px 0 0;font-size:12px">Promoción disponible: ${descripcionPromoActual()}</div>`:'');
+  const descuentoBox = resumen.descuentoMonto>0
+    ? `<div style="display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px;margin-top:10px">
+        <span>Total normal</span><strong>$${resumen.totalBruto.toLocaleString('es-MX')} MXN</strong>
+        <span>Descuento aplicado ${resumen.descuentoPct}%</span><strong style="color:var(--teal)">-$${resumen.descuentoMonto.toLocaleString('es-MX')} MXN</strong>
+        <span style="font-family:var(--font-head);font-weight:800">Subtotal a pagar</span><strong style="color:var(--purple);font-family:var(--font-head)">$${resumen.subtotal.toLocaleString('es-MX')} MXN</strong>
+      </div>`
+    : `<div style="display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px;margin-top:10px">
+        <span style="font-family:var(--font-head);font-weight:800">Total a pagar</span><strong style="color:var(--purple);font-family:var(--font-head)">$${resumen.subtotal.toLocaleString('es-MX')} MXN</strong>
+      </div>`;
   document.getElementById('numeros-asignados').innerHTML=`
     <div style="background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
       <div style="font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--purple-dark);margin-bottom:8px">
-        ${seleccionados.length} boleto${seleccionados.length>1?'s':''} seleccionado${seleccionados.length>1?'s':''} — Total: <span style="color:var(--purple)">$${total_pagar.toLocaleString('es-MX')} MXN</span>
+        ${resumen.pagados} boleto${resumen.pagados>1?'s':''} comprado${resumen.pagados>1?'s':''}${resumen.gratis?` + ${resumen.gratis} gratis`:''}
       </div>
       ${resumenHtml}
-      ${tieneExtras?`<div style="font-size:11px;color:var(--teal);margin-top:6px">✓ Incluye ${cfg.extrasReservado} número${cfg.extrasReservado>1?'s':''} extra del rango reservado por boleto</div>`:''}
+      ${tieneExtras?`<div style="font-size:11px;color:var(--teal);margin-top:6px">✓ Cada boleto incluye ${cfg.extrasReservado} número${cfg.extrasReservado>1?'s':''} extra del rango reservado</div>`:''}
+      ${promoBox}
+      ${descuentoBox}
     </div>`;
   document.getElementById('tf-banco').textContent=cfg.banco||'—';
   document.getElementById('tf-clabe').textContent=cfg.clabe||'—';
   document.getElementById('tf-titular').textContent=cfg.titular||'—';
-  document.getElementById('tf-monto').textContent=`$${total_pagar.toLocaleString('es-MX')} MXN`;
+  document.getElementById('tf-monto').textContent=`$${resumen.subtotal.toLocaleString('es-MX')} MXN`;
   document.getElementById('mp-link').href=(cfg.mpEnabled&&cfg.mpLink)?cfg.mpLink:'#';
   document.getElementById('pp-link').href=(cfg.ppEnabled&&cfg.ppLink)?cfg.ppLink:'#';
+  actualizarMetodosPagoVisibles();
   const nota=document.getElementById('transferencia-nota-pago');
   if(nota) nota.innerHTML=notaPagoHtml();
-  actualizarMetodosPagoVisibles();
 }
 
 function limpiarSeleccion(){
@@ -1103,16 +1265,18 @@ function validarDatosCompra(){
 async function confirmarCompra(){
   if(compraProcesando) return;
   if(!validarDatosCompra()) return;
-  const boletosCopia=[...seleccionados];
-  if(!boletosCopia.length){setAlert('alert-compra','Selecciona al menos un boleto.','err');return;}
+  actualizarPromoGratis();
+  const boletosPagados=[...seleccionados];
+  const boletosGratis=[...boletosPromoGratis];
+  const boletosCopia=[...boletosPagados,...boletosGratis];
+  const resumenCompra=calcularResumenCompra();
+  if(!boletosPagados.length){setAlert('alert-compra','Selecciona al menos un boleto.','err');return;}
   const yaNoDisponibles=boletosCopia.filter(k=>bloqueados.has(k)||boletos[k]?.estado==='vendido'||numeroYaEntregadoLocal(k));
   if(yaNoDisponibles.length){
     setAlert('alert-compra',`Los números ${yaNoDisponibles.join(', ')} ya no están disponibles. Actualiza tu selección.`,'err');
     renderGrid();
     return;
   }
-  // Última validación local antes de enviar: no debe haber repetidos en la compra
-  // ni contra números ya entregados.
   const usadosPrevios=obtenerNumerosVendidosAsignadosLocal();
   const vistosCompra=new Set();
   for(const k of boletosCopia){
@@ -1135,18 +1299,26 @@ async function confirmarCompra(){
   setCompraProcesando(true, boletosCopia.length>1?'Procesando boletos...':'Procesando boleto...');
   try{
     for(const k of boletosCopia){
+      const esGratis=boletosGratis.includes(k);
       const principal=getNums(k);
       const extra=getExtra(k);
-      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:''};
       const todosAsignados=[...principal,...extra];
+      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:'',comprobanteNombre:'',gratis:esGratis,promo:resumenCompra.promoAplicada||'',precioUnitario:esGratis?0:cfg.precio,totalCompra:resumenCompra.totalBruto,descuentoMonto:resumenCompra.descuentoMonto,subtotalCompra:resumenCompra.subtotal};
       await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
-        // IMPORTANTE: en Sheets, la columna "Números asignados" debe incluir
-        // el boleto principal + todos los extras automáticos.
         nums:todosAsignados.map(n=>pad(n)).join(', '),
-        // Se conserva separado solo como referencia adicional para administración.
         numsExtra:extra.map(n=>pad(n)).join(', '),
         fecha,
-        total:cfg.precio,
+        total:resumenCompra.subtotal,
+        precioUnitario:esGratis?0:cfg.precio,
+        tipoBoleto:esGratis?'Gratis promoción':'Compra',
+        promoTipo:resumenCompra.promoTipo,
+        promo:resumenCompra.promoAplicada||'',
+        descuentoPct:resumenCompra.descuentoPct,
+        descuentoMonto:resumenCompra.descuentoMonto,
+        subtotalCompra:resumenCompra.subtotal,
+        totalCompra:resumenCompra.totalBruto,
+        cantidadPagada:resumenCompra.pagados,
+        cantidadGratis:resumenCompra.gratis,
         estadoPago:'Pendiente de Pago',
         pagado:false,
         whatsappPago:cfg.whatsappPago||''});
@@ -1156,10 +1328,10 @@ async function confirmarCompra(){
     document.getElementById('inp-nombre').value='';
     document.getElementById('inp-tel').value='';
     document.getElementById('inp-email').value='';
-    seleccionados=[]; numerosAsignadosPorBoleto={};
+    seleccionados=[]; numerosAsignadosPorBoleto={}; limpiarPromoGratis();
     document.getElementById('form-compra').style.display='none';
     setAlert('alert-compra','','');
-    mostrarBilleteMultiple(boletosCopia, nombre, tel, email, fecha);
+    mostrarBilleteMultiple(boletosCopia, nombre, tel, email, fecha, resumenCompra);
   }catch(e){
     console.error(e);
     setAlert('alert-compra','No se pudo completar el registro. Revisa tu conexión e intenta de nuevo.','err');
@@ -1169,12 +1341,12 @@ async function confirmarCompra(){
 }
 
 // Billete para compra de m?ltiples boletos (se muestra al confirmar)
-function mostrarBilleteMultiple(keys, nombre, tel, email, fecha){
+function mostrarBilleteMultiple(keys, nombre, tel, email, fecha, resumenCompra){
   const esGan=keys.some(k=>esNumGanador(boletos[k]?.nums||[], boletos[k]?.numsExtra||[]));
-  const totalPagar=keys.length*cfg.precio;
+  const totalPagar=resumenCompra?resumenCompra.subtotal:keys.length*cfg.precio;
   const tieneExtras=cfg.extrasReservado>0 && totalPublico()<total();
   document.getElementById('blt-sorteo-nombre').textContent=(cfg.nombre||'SORTEO').toUpperCase();
-  document.getElementById('blt-header-sub').textContent=`${keys.length} boleto${keys.length>1?'s':''} — Comprobante de participación`;
+  document.getElementById('blt-header-sub').textContent=resumenCompra?`${resumenCompra.pagados} comprado${resumenCompra.pagados>1?'s':''}${resumenCompra.gratis?` + ${resumenCompra.gratis} gratis`:''} — Comprobante de participación`:`${keys.length} boleto${keys.length>1?'s':''} — Comprobante de participación`;
   document.getElementById('blt-num-grande').textContent=keys.length===1?keys[0]:`×${keys.length}`;
   const numsDiv=document.getElementById('blt-nums');
   numsDiv.innerHTML=keys.map(k=>{
@@ -1191,7 +1363,9 @@ function mostrarBilleteMultiple(keys, nombre, tel, email, fecha){
     </div>`;
   }).join('');
   document.getElementById('blt-nombre').textContent=nombre;
-  document.getElementById('blt-total').textContent=`$${totalPagar.toLocaleString('es-MX')} MXN${keys.length>1?` (${keys.length} × $${cfg.precio.toLocaleString('es-MX')})`:''}`;
+  document.getElementById('blt-total').innerHTML=resumenCompra
+    ? `<div style="text-align:right"><div>Total normal: $${resumenCompra.totalBruto.toLocaleString('es-MX')} MXN</div>${resumenCompra.descuentoMonto>0?`<div style="color:var(--teal)">Descuento ${resumenCompra.descuentoPct}%: -$${resumenCompra.descuentoMonto.toLocaleString('es-MX')} MXN</div>`:''}${resumenCompra.gratis?`<div style="color:var(--teal)">Promoción: ${resumenCompra.gratis} boleto${resumenCompra.gratis>1?'s':''} gratis</div>`:''}<strong>Subtotal: $${resumenCompra.subtotal.toLocaleString('es-MX')} MXN</strong></div>`
+    : `$${totalPagar.toLocaleString('es-MX')} MXN${keys.length>1?` (${keys.length} × $${cfg.precio.toLocaleString('es-MX')})`:''}`;
   document.getElementById('blt-fecha').textContent=fecha;
   let fs='Por definir';
   if(cfg.fechaSorteo){const d=new Date(cfg.fechaSorteo+'T12:00:00');fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
@@ -1399,7 +1573,7 @@ function renderAdmin(){
     ?'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Sin ventas aún</td></tr>'
     :vendidos.map(([k,b])=>`
       <tr>
-        <td><strong>${k}</strong></td>
+        <td><strong>${k}</strong><br>${b.gratis?'<span class="badge badge-verde" style="font-size:9px">Gratis promo</span>':'<span class="badge badge-gris" style="font-size:9px">Compra</span>'}</td>
         <td><span class="badge badge-morado" style="font-size:10px">${numerosCompletosBoleto(b)}</span></td>
         <td>${b.nombre}<br><span style="font-size:11px;color:var(--text-muted)">${b.tel}</span></td>
         <td>
@@ -1439,6 +1613,12 @@ function loadConfigUI(){
   document.getElementById('cfg-nums-por-boleto').value=cfg.numsPorBoleto;
   document.getElementById('cfg-rango-publico').value=cfg.rangoPublicoMax||0;
   document.getElementById('cfg-extras-reservado').value=cfg.extrasReservado||0;
+  document.getElementById('cfg-promo-tipo').value=cfg.promoTipo||'none';
+  document.getElementById('cfg-promo-desc-min').value=cfg.promoDescuentoMin||4;
+  document.getElementById('cfg-promo-desc-pct').value=cfg.promoDescuentoPct||10;
+  document.getElementById('cfg-promo-gratis-min').value=cfg.promoGratisMin||10;
+  document.getElementById('cfg-promo-gratis-cantidad').value=cfg.promoGratisCantidad||2;
+  actualizarResumenPromoAdmin();
   document.getElementById('cfg-sheets-url').value=cfg.sheetsUrl;
   document.getElementById('cfg-banco').value=cfg.banco||'';
   document.getElementById('cfg-clabe').value=cfg.clabe||'';
@@ -1526,6 +1706,11 @@ function guardarConfig(){
   cfg.numsPorBoleto=Math.min(parseInt(document.getElementById('cfg-nums-por-boleto').value)||1,total());
   cfg.rangoPublicoMax=parseInt(document.getElementById('cfg-rango-publico').value)||0;
   cfg.extrasReservado=parseInt(document.getElementById('cfg-extras-reservado').value)||0;
+  cfg.promoTipo=document.getElementById('cfg-promo-tipo').value||'none';
+  cfg.promoDescuentoMin=Math.max(1,parseInt(document.getElementById('cfg-promo-desc-min').value)||4);
+  cfg.promoDescuentoPct=Math.min(Math.max(parseFloat(document.getElementById('cfg-promo-desc-pct').value)||0,0),100);
+  cfg.promoGratisMin=Math.max(1,parseInt(document.getElementById('cfg-promo-gratis-min').value)||10);
+  cfg.promoGratisCantidad=Math.max(1,parseInt(document.getElementById('cfg-promo-gratis-cantidad').value)||2);
   cfg.sheetsUrl=document.getElementById('cfg-sheets-url').value.trim();
   cfg.banco=document.getElementById('cfg-banco').value.trim();
   cfg.clabe=document.getElementById('cfg-clabe').value.trim();
@@ -1541,10 +1726,11 @@ function guardarConfig(){
   cfg.popupTitle=document.getElementById('cfg-popup-title').value.trim()||'Aviso importante';
   cfg.popupMessage=document.getElementById('cfg-popup-message').value.trim();
   cfg.popupButton=document.getElementById('cfg-popup-button').value.trim()||'Entendido';
-  if(cambio){boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};}
+  if(cambio){boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();}
+  else { actualizarPromoGratis(); }
   initBoletos();
   actualizarCabecera();
-  guardarEstado();renderGrid();renderStats();renderResultadoPublico();renderAdmin();actualizarMetodosPagoVisibles();
+  guardarEstado();renderGrid();renderStats();renderResultadoPublico();renderAdmin();actualizarMetodosPagoVisibles();actualizarResumenPromoAdmin();
   setAlert('alert-cfg',cambio?'✅ Guardado. Boletos reiniciados.':'✅ Configuración guardada.','ok');
   if(cfg.popupEnabled) setTimeout(()=>mostrarPopup(false),250);
 }
@@ -1587,7 +1773,7 @@ function desbloquearEspecifico(k){bloqueados.delete(k);guardarEstado();renderGri
 
 function eliminarVenta(k){
   if(!confirm(`¿Liberar el boleto ${k}? Sus números principales y extras volverán a estar disponibles.`)) return;
-  boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:''};
+  boletos[k]=boletoVacio();
   guardarEstado();renderGrid();renderStats();renderAdmin();
   enviarSheets({accion:'cancelacion',boleto:k,fecha:new Date().toLocaleString('es-MX'),motivo:'Liberado por administrador'});
   setAlert('alert-mantenimiento',`✅ Boleto ${k} liberado. Sus números vuelven a estar disponibles.`,'ok');
@@ -1598,7 +1784,7 @@ function liberarPendientes(){
   if(!pendientes.length){setAlert('alert-mantenimiento','No hay boletos pendientes de pago para liberar.','info');return;}
   if(!confirm(`¿Liberar ${pendientes.length} boleto(s) pendiente(s) de pago? Sus números principales y extras volverán a estar disponibles.`)) return;
   pendientes.forEach(([k])=>{
-    boletos[k]={estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:''};
+    boletos[k]=boletoVacio();
   });
   guardarEstado();renderGrid();renderStats();renderAdmin();
   enviarSheets({accion:'liberar_pendientes',fecha:new Date().toLocaleString('es-MX'),cantidad:pendientes.length});
@@ -1621,6 +1807,7 @@ function reestablecerBoletosACero(){
   bloqueados=new Set();
   seleccionados=[];
   numerosAsignadosPorBoleto={};
+  limpiarPromoGratis();
   cfg.ganadores=[];
   initBoletos();
   guardarEstado();renderGrid();renderStats();renderAdmin();actualizarMetodosPagoVisibles();
@@ -1649,10 +1836,10 @@ async function enviarSheets(data){
 function exportarCSV(){
   const vend=Object.entries(boletos).filter(([,b])=>b.estado==='vendido');
   if(!vend.length) return;
-  const rows=[['Boleto','Números','Números extra','Nombre','Teléfono','Correo','Fecha','Pagado','Comprobante','Ganador']];
+  const rows=[['Boleto','Tipo','Números','Números extra','Nombre','Teléfono','Correo','Fecha','Pagado','Comprobante','Ganador','Promoción','Subtotal compra']];
   vend.forEach(([k,b])=>rows.push([
-    k,(b.nums||[]).join(' | '),(b.numsExtra||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',b.comprobante?'Sí':'No',
-    esNumGanador(b.nums||[],b.numsExtra||[])?'Sí':'No'
+    k,b.gratis?'Gratis promo':'Compra',(b.nums||[]).join(' | '),(b.numsExtra||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',b.comprobante?'Sí':'No',
+    esNumGanador(b.nums||[],b.numsExtra||[])?'Sí':'No',b.promo||'',b.subtotalCompra||''
   ]));
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
@@ -1708,6 +1895,10 @@ renderStats();
 renderResultadoPublico();
 actualizarMetodosPagoVisibles();
 setTimeout(()=>mostrarPopup(false), 550);
+['cfg-promo-tipo','cfg-promo-desc-min','cfg-promo-desc-pct','cfg-promo-gratis-min','cfg-promo-gratis-cantidad'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.addEventListener('input',actualizarResumenPromoAdmin);el.addEventListener('change',actualizarResumenPromoAdmin);}
+});
 </script>
 </body>
 </html>
