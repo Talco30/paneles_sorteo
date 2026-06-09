@@ -806,13 +806,10 @@ function guardarEstado(){
   for(const [k,v] of Object.entries(boletos)){
     if(v.estado==='vendido') bVendidos[k]=v;
   }
-  // Guardar cfg SIN premios (pueden tener base64 pesados que saturan localStorage)
-  const cfgSinPremios={...cfg, premios:[]};
-  try{ localStorage.setItem('s_cfg', JSON.stringify(cfgSinPremios)); }catch(e){ console.warn('localStorage s_cfg error',e); }
-  // Premios en clave separada para no saturar s_cfg
-  try{ localStorage.setItem('s_premios', JSON.stringify(cfg.premios||[])); }catch(e){ console.warn('localStorage s_premios error (fotos muy pesadas?)',e); }
-  try{ localStorage.setItem('s_boletos', JSON.stringify(bVendidos)); }catch(e){ console.warn('localStorage s_boletos error',e); }
-  try{ localStorage.setItem('s_bloq', JSON.stringify([...bloqueados])); }catch(e){}
+  localStorage.setItem('s_cfg', JSON.stringify(cfg));
+  localStorage.setItem('s_boletos', JSON.stringify(bVendidos));
+  localStorage.setItem('s_bloq', JSON.stringify([...bloqueados]));
+  // Guardar hash, nunca texto plano
   if(PASS_ADMIN_HASH) localStorage.setItem('s_pass_hash', PASS_ADMIN_HASH);
 }
 
@@ -820,11 +817,6 @@ async function cargarEstado(){
   try{
     const c=localStorage.getItem('s_cfg'); if(c) cfg={...cfg,...JSON.parse(c)};
     if(SHEETS_URL_FIJA) cfg.sheetsUrl=SHEETS_URL_FIJA;
-    // Cargar premios desde su clave separada (pueden ser pesados por base64)
-    const premiosGuardados=localStorage.getItem('s_premios');
-    if(premiosGuardados){
-      try{ const p=JSON.parse(premiosGuardados); cfg.premios=Array.isArray(p)?p:[]; }catch(e){ cfg.premios=[]; }
-    } else if(!Array.isArray(cfg.premios)){ cfg.premios=[]; }
     const b=localStorage.getItem('s_boletos');
     if(b){ for(const [k,v] of Object.entries(JSON.parse(b))) boletos[k]=v; }
     const bl=localStorage.getItem('s_bloq'); if(bl) bloqueados=new Set(JSON.parse(bl));
@@ -1508,57 +1500,13 @@ function enviarSheetsConRespuesta(data){
 // ============================================================
 function sheetsUrlConParams(params){ const base=(cfg.sheetsUrl||'').trim(); if(!base) return ''; const sep=base.includes('?')?'&':'?'; return base+sep+new URLSearchParams(params).toString(); }
 function cargarJsonp(url,timeoutMs=12000){ return new Promise((resolve,reject)=>{ const cb='__sorteoState_'+Date.now()+'_'+Math.floor(Math.random()*100000); const timer=setTimeout(()=>{cleanup();reject(new Error('Timeout'));},timeoutMs); function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}if(script&&script.parentNode) script.parentNode.removeChild(script);} window[cb]=(data)=>{cleanup();resolve(data);}; const script=document.createElement('script'); script.src=url+(url.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb)+'&_t='+Date.now(); script.onerror=()=>{cleanup();reject(new Error('Error cargando Apps Script'));}; document.body.appendChild(script); }); }
-function coercionarConfigCentral(config){
-  const out={...(config||{})};
-  ['precio','digitos','numsPorBoleto','logoWidth','logoHeight','promoDescuentoMin','promoDescuentoPct','promoGratisMin','promoGratisCantidad','rangoPublicoMax','extrasReservado'].forEach(k=>{
-    if(out[k]!==undefined&&out[k]!==null&&out[k]!=='') out[k]=Number(out[k])||0;
-  });
-  ['mpEnabled','ppEnabled','popupEnabled'].forEach(k=>{
-    const v=out[k];
-    out[k]=(v===true||String(v).toLowerCase()==='true'||String(v).toLowerCase()==='sí'||String(v).toLowerCase()==='si'||String(v)==='1');
-  });
-  // premios puede llegar como string JSON desde Sheets (la hoja Config guarda texto)
-  // Si no es array válido, conservar el array local actual para no perder lo configurado
-  if(out.premios !== undefined){
-    if(typeof out.premios === 'string'){
-      try{ const parsed=JSON.parse(out.premios); out.premios=Array.isArray(parsed)?parsed:cfg.premios||[]; }
-      catch(e){ out.premios=cfg.premios||[]; }
-    } else if(!Array.isArray(out.premios)){
-      out.premios=cfg.premios||[];
-    }
-  } else {
-    out.premios=cfg.premios||[];
-  }
-  return out;
-}
-function aplicarEstadoCentral(data){
-  if(!data||data.ok===false) throw new Error(data?.error||'Respuesta inválida');
-  const urlActual=cfg.sheetsUrl;
-  // Guardar premios locales ANTES de sobrescribir cfg — Sheets puede no tenerlos aún
-  const premiosLocales=Array.isArray(cfg.premios)&&cfg.premios.length>0 ? cfg.premios : null;
-  const cfgCentral=coercionarConfigCentral(data.config||{});
-  cfg={...cfg,...cfgCentral};
-  cfg.sheetsUrl=SHEETS_URL_FIJA||cfg.sheetsUrl||urlActual;
-  // Si después de coerción los premios quedaron vacíos o inválidos, restaurar los locales
-  if((!Array.isArray(cfg.premios)||cfg.premios.length===0) && premiosLocales){
-    cfg.premios=premiosLocales;
-  }
-  boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();initBoletos();
-  (data.ventas||[]).forEach(v=>{
-    const k=String(v.boleto||'').padStart(cfg.digitos,'0');if(!k) return;
-    boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};
-  });
-  (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0')));
-  cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n));
-  guardarEstado();actualizarCabecera();actualizarMetodosPagoVisibles();renderGrid();renderStats();renderResultadoPublico();
-  if(adminLogado) renderAdmin();
-  if(adminLogado){const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-ok">✅ Datos cargados: ${data.timestamp||new Date().toLocaleTimeString('es-MX')}</div>`;}
-}
+function coercionarConfigCentral(config){ const out={...(config||{})}; ['precio','digitos','numsPorBoleto','logoWidth','logoHeight','promoDescuentoMin','promoDescuentoPct','promoGratisMin','promoGratisCantidad','rangoPublicoMax','extrasReservado'].forEach(k=>{if(out[k]!==undefined&&out[k]!==null&&out[k]!=='') out[k]=Number(out[k])||0;}); ['mpEnabled','ppEnabled','popupEnabled'].forEach(k=>{const v=out[k];out[k]=(v===true||String(v).toLowerCase()==='true'||String(v).toLowerCase()==='sí'||String(v).toLowerCase()==='si'||String(v)==='1');}); return out; }
+function aplicarEstadoCentral(data){ if(!data||data.ok===false) throw new Error(data?.error||'Respuesta inválida'); const urlActual=cfg.sheetsUrl; const cfgCentral=coercionarConfigCentral(data.config||{}); cfg={...cfg,...cfgCentral}; cfg.sheetsUrl=SHEETS_URL_FIJA||cfg.sheetsUrl||urlActual; boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();initBoletos(); (data.ventas||[]).forEach(v=>{const k=String(v.boleto||'').padStart(cfg.digitos,'0');if(!k) return;boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};}); (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0'))); cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n)); guardarEstado();actualizarCabecera();actualizarMetodosPagoVisibles();renderGrid();renderStats();renderResultadoPublico();if(adminLogado) renderAdmin(); if(adminLogado){const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-ok">✅ Datos cargados: ${data.timestamp||new Date().toLocaleTimeString('es-MX')}</div>`;} }
 async function cargarDesdeSheets(opts={}){ if(!cfg.sheetsUrl){if(adminLogado&&!opts.silencioso) setAlert('alert-cfg','Configura primero la URL.','warn');return false;} try{ if(adminLogado&&!opts.silencioso){setAlert('alert-cfg','⏳ Cargando desde Sheets...','info');const el=document.getElementById('sheets-status');if(el) el.innerHTML='<div class="alert alert-info">⏳ Cargando...</div>';} const url=sheetsUrlConParams({accion:'state'}); const data=await cargarJsonp(url); aplicarEstadoCentral(data); if(adminLogado&&!opts.silencioso) setAlert('alert-cfg',`✅ Cargado. Ventas: ${(data.ventas||[]).length}.`,'ok'); return true; }catch(e){ console.error(e); if(adminLogado){const msg=`❌ No se pudo cargar desde Sheets. ${e.message||''}`;setAlert('alert-cfg',msg,'err');const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-err">${msg}</div>`;} return false; } }
 
 async function probarSheets(){ if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;} setAlert('alert-cfg','⏳ Probando...','info'); await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')}); setAlert('alert-cfg','✅ Prueba enviada. Cargando estado...','ok'); setTimeout(()=>cargarDesdeSheets({silencioso:false}),900); }
 function abrirPruebaPing(){ const u=(cfg.sheetsUrl||'').trim(); if(!u){setAlert('alert-cfg','Primero pega la URL.','err');return;} window.open(u+(u.includes('?')?'&':'?')+'accion=ping','_blank'); setAlert('alert-cfg','Ping abierto en otra pestaña.','info'); }
-function reiniciarTodo(){ if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración?')) return; const url=cfg.sheetsUrl; if(url) enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')}); boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];cfg.premios=[];localStorage.clear();initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();setAlert('alert-cfg','Todo reiniciado.','warn'); }
+function reiniciarTodo(){ if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración?')) return; const url=cfg.sheetsUrl; if(url) enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')}); boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];localStorage.clear();initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();setAlert('alert-cfg','Todo reiniciado.','warn'); }
 
 // ============================================================
 //  CSV
@@ -1720,51 +1668,18 @@ function agregarFotoUrl(id){
   setAlert('alert-premios','Foto agregada. Guarda ajustes para conservar.','ok');
 }
 
-function agregarFotoArchivo(id, input){
+function agregarFotoArchivo(id,input){
   const file=input.files&&input.files[0];
   if(!file||!file.type.startsWith('image/')){setAlert('alert-premios','Selecciona una imagen.','err');return;}
   const p=(cfg.premios||[]).find(p=>p.id===id);
-  if(!p){setAlert('alert-premios','Premio no encontrado.','err');return;}
-  if((p.fotos||[]).length>=8){setAlert('alert-premios','Máximo 8 fotos por premio.','warn');return;}
-  // Leer PRIMERO, agregar al array DESPUÉS — evita que el re-render destruya
-  // el FileReader antes de que termine de leer el archivo
+  if(!p||(p.fotos||[]).length>=8){setAlert('alert-premios','Máximo 8 fotos.','warn');return;}
   const reader=new FileReader();
-  reader.onload=function(e){
-    if(!p.fotos) p.fotos=[];
-    p.fotos.push({url:e.target.result, caption:''});
-    // Re-render completo del card para mostrar la nueva foto
-    renderPremiosAdmin();
-    setAlert('alert-premios','✅ Foto cargada. Guarda ajustes para conservarla.','ok');
-  };
-  reader.onerror=function(){
-    setAlert('alert-premios','❌ No se pudo leer la imagen. Intenta de nuevo.','err');
-  };
-  // Limpiar input ANTES de leer para evitar conflictos en móvil
-  const fileRef=input.files[0];
+  reader.onload=e=>{if(!p.fotos) p.fotos=[];p.fotos.push({url:e.target.result,caption:''});renderPremiosAdmin();setAlert('alert-premios','Foto cargada. Guarda ajustes.','ok');};
+  reader.readAsDataURL(file);
   input.value='';
-  reader.readAsDataURL(fileRef);
 }
 
-function quitarFotoPremio(id,fi){
-  const p=(cfg.premios||[]).find(p=>p.id===id);
-  if(!p||!p.fotos) return;
-  p.fotos.splice(fi,1);
-  renderPremiosAdmin();
-}
-
-// Refresca solo la grilla de fotos de un card sin reconstruir todo
-function refrescarFotosCard(id){
-  const p=(cfg.premios||[]).find(p=>p.id===id);
-  if(!p) return;
-  const grid=document.querySelector(`#padmin-${id} .fotos-admin-grid`);
-  if(!grid) return;
-  const puedeSubir=(p.fotos||[]).length<8;
-  const fotosHtml=(p.fotos||[]).map((f,fi)=>`<div class="foto-admin-item"><img src="${htmlEscape(normalizarUrlDrive(f.url))}" alt="${htmlEscape(f.caption||'')}" onerror="this.style.opacity='.25'"><button class="foto-admin-remove" onclick="quitarFotoPremio('${p.id}',${fi})">×</button></div>`).join('');
-  grid.innerHTML=fotosHtml+(puedeSubir?`<label class="foto-admin-add" title="Subir archivo">+<input type="file" accept="image/*" style="display:none" onchange="agregarFotoArchivo('${p.id}',this)"></label>`:'');
-  // Actualizar contador
-  const tit=document.querySelector(`#padmin-${id} .foto-count`);
-  if(tit) tit.textContent=`(${(p.fotos||[]).length}/8)`;
-}
+function quitarFotoPremio(id,fi){const p=(cfg.premios||[]).find(p=>p.id===id);if(!p||!p.fotos) return;p.fotos.splice(fi,1);renderPremiosAdmin();}
 
 // ============================================================
 //  LOGIN / NAV
