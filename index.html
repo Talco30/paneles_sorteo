@@ -146,8 +146,8 @@ tr:hover td{background:var(--gray-50)}
 .sep{height:1px;background:var(--gray-100);margin:16px 0}
 
 /* == BILLETE MODAL == */
-.billete-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
-.billete-wrap{background:var(--white);border-radius:20px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25);overflow:hidden;animation:slideUp 0.35s ease}
+.billete-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:16px;backdrop-filter:blur(4px);overflow-y:auto}
+.billete-wrap{background:var(--white);border-radius:20px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25);overflow:hidden;animation:slideUp 0.35s ease;margin:auto}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 .billete-header{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;padding:20px 24px 16px;text-align:center;position:relative}
 .billete-header-title{font-family:var(--font-head);font-size:20px;font-weight:800;letter-spacing:-0.02em}
@@ -1653,8 +1653,24 @@ function coercionarConfigCentral(config){
   const out={...(config||{})};
   ['precio','digitos','numsPorBoleto','logoWidth','logoHeight','promoDescuentoMin','promoDescuentoPct','promoGratisMin','promoGratisCantidad','rangoPublicoMax','extrasReservado'].forEach(k=>{if(out[k]!==undefined&&out[k]!==null&&out[k]!=='') out[k]=Number(out[k])||0;});
   ['mpEnabled','ppEnabled','popupEnabled'].forEach(k=>{const v=out[k];out[k]=(v===true||String(v).toLowerCase()==='true'||String(v).toLowerCase()==='sí'||String(v).toLowerCase()==='si'||String(v)==='1');});
+  // fechaSorteo: debe quedar como string "YYYY-MM-DD" — Sheets a veces devuelve objeto Date o número
+  // Si llega como Date de JS o número de Excel, convertir a string ISO
+  if(out.fechaSorteo!==undefined&&out.fechaSorteo!==null&&out.fechaSorteo!==''){
+    const f=out.fechaSorteo;
+    if(f instanceof Date){
+      out.fechaSorteo=f.toISOString().slice(0,10);
+    } else if(typeof f==='number'){
+      // Número serial de Excel → fecha JS (días desde 1900-01-01)
+      const d=new Date(Math.round((f-25569)*86400*1000));
+      out.fechaSorteo=d.toISOString().slice(0,10);
+    } else {
+      // Limpiar cualquier sufijo de hora que venga de Sheets (" 12:00:00", "T...")
+      out.fechaSorteo=String(f).replace(/[T ].*/,'').trim();
+      // Validar que sea formato YYYY-MM-DD; si no, vaciar
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(out.fechaSorteo)) out.fechaSorteo='';
+    }
+  }
   // premios: Sheets lo guarda como string JSON — parsearlo; si falla o no es array, devolver undefined
-  // para que aplicarEstadoCentral use los premios locales
   if(out.premios!==undefined){
     if(typeof out.premios==='string'){
       try{ const p=JSON.parse(out.premios); out.premios=Array.isArray(p)&&p.length>0?p:undefined; }
