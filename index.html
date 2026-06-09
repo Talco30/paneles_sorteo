@@ -806,10 +806,13 @@ function guardarEstado(){
   for(const [k,v] of Object.entries(boletos)){
     if(v.estado==='vendido') bVendidos[k]=v;
   }
-  localStorage.setItem('s_cfg', JSON.stringify(cfg));
-  localStorage.setItem('s_boletos', JSON.stringify(bVendidos));
-  localStorage.setItem('s_bloq', JSON.stringify([...bloqueados]));
-  // Guardar hash, nunca texto plano
+  // Guardar cfg SIN premios (pueden tener base64 pesados que saturan localStorage)
+  const cfgSinPremios={...cfg, premios:[]};
+  try{ localStorage.setItem('s_cfg', JSON.stringify(cfgSinPremios)); }catch(e){ console.warn('localStorage s_cfg error',e); }
+  // Premios en clave separada para no saturar s_cfg
+  try{ localStorage.setItem('s_premios', JSON.stringify(cfg.premios||[])); }catch(e){ console.warn('localStorage s_premios error (fotos muy pesadas?)',e); }
+  try{ localStorage.setItem('s_boletos', JSON.stringify(bVendidos)); }catch(e){ console.warn('localStorage s_boletos error',e); }
+  try{ localStorage.setItem('s_bloq', JSON.stringify([...bloqueados])); }catch(e){}
   if(PASS_ADMIN_HASH) localStorage.setItem('s_pass_hash', PASS_ADMIN_HASH);
 }
 
@@ -817,6 +820,11 @@ async function cargarEstado(){
   try{
     const c=localStorage.getItem('s_cfg'); if(c) cfg={...cfg,...JSON.parse(c)};
     if(SHEETS_URL_FIJA) cfg.sheetsUrl=SHEETS_URL_FIJA;
+    // Cargar premios desde su clave separada (pueden ser pesados por base64)
+    const premiosGuardados=localStorage.getItem('s_premios');
+    if(premiosGuardados){
+      try{ const p=JSON.parse(premiosGuardados); cfg.premios=Array.isArray(p)?p:[]; }catch(e){ cfg.premios=[]; }
+    } else if(!Array.isArray(cfg.premios)){ cfg.premios=[]; }
     const b=localStorage.getItem('s_boletos');
     if(b){ for(const [k,v] of Object.entries(JSON.parse(b))) boletos[k]=v; }
     const bl=localStorage.getItem('s_bloq'); if(bl) bloqueados=new Set(JSON.parse(bl));
@@ -1523,12 +1531,34 @@ function coercionarConfigCentral(config){
   }
   return out;
 }
-function aplicarEstadoCentral(data){ if(!data||data.ok===false) throw new Error(data?.error||'Respuesta inválida'); const urlActual=cfg.sheetsUrl; const cfgCentral=coercionarConfigCentral(data.config||{}); cfg={...cfg,...cfgCentral}; cfg.sheetsUrl=SHEETS_URL_FIJA||cfg.sheetsUrl||urlActual; boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();initBoletos(); (data.ventas||[]).forEach(v=>{const k=String(v.boleto||'').padStart(cfg.digitos,'0');if(!k) return;boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};}); (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0'))); cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n)); guardarEstado();actualizarCabecera();actualizarMetodosPagoVisibles();renderGrid();renderStats();renderResultadoPublico();if(adminLogado) renderAdmin(); if(adminLogado){const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-ok">✅ Datos cargados: ${data.timestamp||new Date().toLocaleTimeString('es-MX')}</div>`;} }
+function aplicarEstadoCentral(data){
+  if(!data||data.ok===false) throw new Error(data?.error||'Respuesta inválida');
+  const urlActual=cfg.sheetsUrl;
+  // Guardar premios locales ANTES de sobrescribir cfg — Sheets puede no tenerlos aún
+  const premiosLocales=Array.isArray(cfg.premios)&&cfg.premios.length>0 ? cfg.premios : null;
+  const cfgCentral=coercionarConfigCentral(data.config||{});
+  cfg={...cfg,...cfgCentral};
+  cfg.sheetsUrl=SHEETS_URL_FIJA||cfg.sheetsUrl||urlActual;
+  // Si después de coerción los premios quedaron vacíos o inválidos, restaurar los locales
+  if((!Array.isArray(cfg.premios)||cfg.premios.length===0) && premiosLocales){
+    cfg.premios=premiosLocales;
+  }
+  boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();initBoletos();
+  (data.ventas||[]).forEach(v=>{
+    const k=String(v.boleto||'').padStart(cfg.digitos,'0');if(!k) return;
+    boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};
+  });
+  (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0')));
+  cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n));
+  guardarEstado();actualizarCabecera();actualizarMetodosPagoVisibles();renderGrid();renderStats();renderResultadoPublico();
+  if(adminLogado) renderAdmin();
+  if(adminLogado){const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-ok">✅ Datos cargados: ${data.timestamp||new Date().toLocaleTimeString('es-MX')}</div>`;}
+}
 async function cargarDesdeSheets(opts={}){ if(!cfg.sheetsUrl){if(adminLogado&&!opts.silencioso) setAlert('alert-cfg','Configura primero la URL.','warn');return false;} try{ if(adminLogado&&!opts.silencioso){setAlert('alert-cfg','⏳ Cargando desde Sheets...','info');const el=document.getElementById('sheets-status');if(el) el.innerHTML='<div class="alert alert-info">⏳ Cargando...</div>';} const url=sheetsUrlConParams({accion:'state'}); const data=await cargarJsonp(url); aplicarEstadoCentral(data); if(adminLogado&&!opts.silencioso) setAlert('alert-cfg',`✅ Cargado. Ventas: ${(data.ventas||[]).length}.`,'ok'); return true; }catch(e){ console.error(e); if(adminLogado){const msg=`❌ No se pudo cargar desde Sheets. ${e.message||''}`;setAlert('alert-cfg',msg,'err');const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-err">${msg}</div>`;} return false; } }
 
 async function probarSheets(){ if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;} setAlert('alert-cfg','⏳ Probando...','info'); await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')}); setAlert('alert-cfg','✅ Prueba enviada. Cargando estado...','ok'); setTimeout(()=>cargarDesdeSheets({silencioso:false}),900); }
 function abrirPruebaPing(){ const u=(cfg.sheetsUrl||'').trim(); if(!u){setAlert('alert-cfg','Primero pega la URL.','err');return;} window.open(u+(u.includes('?')?'&':'?')+'accion=ping','_blank'); setAlert('alert-cfg','Ping abierto en otra pestaña.','info'); }
-function reiniciarTodo(){ if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración?')) return; const url=cfg.sheetsUrl; if(url) enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')}); boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];localStorage.clear();initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();setAlert('alert-cfg','Todo reiniciado.','warn'); }
+function reiniciarTodo(){ if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración?')) return; const url=cfg.sheetsUrl; if(url) enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')}); boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];cfg.premios=[];localStorage.clear();initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();setAlert('alert-cfg','Todo reiniciado.','warn'); }
 
 // ============================================================
 //  CSV
