@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title id="page-title">Sistema de Sorteos v10</title>
+<title id="page-title">Sistema de Sorteos v12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
@@ -822,7 +822,7 @@ let cfg = {
   promoTipo:"none", promoDescuentoMin:4, promoDescuentoPct:10,
   promoGratisMin:10, promoGratisCantidad:2,
   ganadores:[], rangoPublicoMax:0, extrasReservado:0,
-  premios:[]  // array dinámico de premios — v11
+  premios:[]  // array dinámico de premios — v12
 };
 let boletos = {};
 let bloqueados = new Set();
@@ -1680,7 +1680,7 @@ function abrirPruebaPing(){ const u=(cfg.sheetsUrl||'').trim(); if(!u){setAlert(
 function exportarCSV(){ const vend=Object.entries(boletos).filter(([,b])=>b.estado==='vendido'); if(!vend.length) return; const rows=[['Boleto','Tipo','Números','Extras','Nombre','Teléfono','Correo','Fecha','Pagado','Comprobante','Ganador','Promoción','Subtotal']]; vend.forEach(([k,b])=>rows.push([k,b.gratis?'Gratis':'Compra',(b.nums||[]).join(' | '),(b.numsExtra||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',b.comprobante?'Sí':'No',esNumGanador(b.nums||[],b.numsExtra||[])?'Sí':'No',b.promo||'',b.subtotalCompra||''])); const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'})); a.download=`sorteo_${cfg.nombre.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
 
 // ============================================================
-//  PREMIOS — lógica completa v11
+//  PREMIOS — lógica completa v12
 // ============================================================
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
