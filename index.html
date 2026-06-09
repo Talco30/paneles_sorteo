@@ -266,16 +266,30 @@ tr:hover td{background:var(--gray-50)}
 .carrusel{position:relative;width:100%;background:var(--gray-100);overflow:hidden;user-select:none}
 .carrusel-track{display:flex;transition:transform 0.38s cubic-bezier(.4,0,.2,1)}
 .carrusel-slide{min-width:100%;position:relative}
-.carrusel-slide img{width:100%;height:220px;object-fit:cover;display:block}
-.carrusel-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.55));color:#fff;font-size:12px;padding:18px 12px 8px;font-family:var(--font-head)}
-.carrusel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.88);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.18);transition:background 0.15s;z-index:2}
-.carrusel-btn:hover{background:#fff}
-.carrusel-prev{left:8px}
-.carrusel-next{right:8px}
-.carrusel-dots{display:flex;justify-content:center;gap:5px;padding:7px 0 4px;background:var(--gray-50)}
-.carrusel-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);border:none;cursor:pointer;padding:0;transition:background 0.15s}
-.carrusel-dot.active{background:var(--purple)}
-.carrusel-placeholder{width:100%;height:180px;display:flex;align-items:center;justify-content:center;background:var(--gray-100);color:var(--text-muted);font-size:13px;flex-direction:column;gap:8px}
+/* Altura por defecto 340px — más grande y usable */
+.carrusel-slide img{width:100%;height:340px;object-fit:cover;display:block;cursor:zoom-in;transition:opacity 0.2s}
+/* Modo "contener": muestra la imagen completa sin recortar */
+.carrusel.fit-contain .carrusel-slide img{object-fit:contain;background:var(--gray-100)}
+.carrusel-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.6));color:#fff;font-size:12px;padding:22px 14px 10px;font-family:var(--font-head)}
+.carrusel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.92);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,0.2);transition:all 0.15s;z-index:2}
+.carrusel-btn:hover{background:#fff;transform:translateY(-50%) scale(1.08)}
+.carrusel-prev{left:10px}
+.carrusel-next{right:10px}
+.carrusel-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 5px;background:var(--gray-50)}
+.carrusel-dot{width:8px;height:8px;border-radius:50%;background:var(--gray-200);border:none;cursor:pointer;padding:0;transition:all 0.15s}
+.carrusel-dot.active{background:var(--purple);transform:scale(1.2)}
+.carrusel-placeholder{width:100%;height:280px;display:flex;align-items:center;justify-content:center;background:var(--gray-100);color:var(--text-muted);font-size:13px;flex-direction:column;gap:8px}
+/* Lightbox — foto a pantalla completa al tocar */
+.lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn 0.2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.lightbox-img{max-width:96vw;max-height:92vh;object-fit:contain;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,0.5)}
+.lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center}
+.lightbox-close:hover{background:rgba(255,255,255,0.28)}
+.lightbox-caption{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(0,0,0,0.5);padding:6px 16px;border-radius:20px;max-width:80vw;text-align:center}
+/* Indicador de ajuste de foto en Admin */
+.carrusel-fit-toggle{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);font-size:11px;color:var(--text-muted)}
+.carrusel-fit-toggle button{padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-200);background:var(--white);color:var(--text-muted);font-family:var(--font-head);transition:all 0.12s}
+.carrusel-fit-toggle button.active{background:var(--purple-light);border-color:var(--purple-mid);color:var(--purple-dark)}
 
 /* == ADMIN PREMIOS == */
 .premio-admin-card{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;position:relative}
@@ -1697,15 +1711,53 @@ function normalizarUrlDrive(url){
 
 function badgeClasePremio(idx){ if(idx===0) return 'premio-badge-1'; if(idx===1) return 'premio-badge-2'; return 'premio-badge-n'; }
 
-function premioVacio(){ return {id:uid(),etiqueta:'1er Lugar',titulo:'',valor:'',descripcionModo:'simple',descripcion:'',fotos:[],autoplay:true,autoplayVel:4,visible:true,ctaTexto:'🎟 Quiero participar'}; }
+function premioVacio(){ return {id:uid(),etiqueta:'1er Lugar',titulo:'',valor:'',descripcionModo:'simple',descripcion:'',fotos:[],autoplay:true,autoplayVel:4,visible:true,ctaTexto:'🎟 Quiero participar',fotoAjuste:'cover',fotoAltura:340}; }
+
+// ── Lightbox ──────────────────────────────────────────────────
+function abrirLightbox(url, caption){
+  // Evitar que el lightbox se abra si se está swipeando
+  if(window._carSwipeOccurred){ window._carSwipeOccurred=false; return; }
+  const overlay=document.createElement('div');
+  overlay.className='lightbox-overlay';
+  overlay.id='lightbox-overlay';
+  overlay.innerHTML=`
+    <button class="lightbox-close" onclick="cerrarLightbox()">✕</button>
+    <img class="lightbox-img" src="${url}" alt="${caption||''}">
+    ${caption?`<div class="lightbox-caption">${caption}</div>`:''}
+  `;
+  overlay.onclick=function(e){ if(e.target===overlay) cerrarLightbox(); };
+  document.body.appendChild(overlay);
+  document.body.style.overflow='hidden';
+}
+function cerrarLightbox(){
+  const el=document.getElementById('lightbox-overlay');
+  if(el){ el.remove(); document.body.style.overflow=''; }
+}
 
 function crearCarrusel(premio,idPremio){
   const fotos=(premio.fotos||[]).map(f=>({...f,url:normalizarUrlDrive(f.url)}));
-  if(!fotos.length) return `<div class="carrusel-placeholder"><span style="font-size:28px">🖼️</span><span>Sin fotos</span></div>`;
-  const slides=fotos.map((f,i)=>`<div class="carrusel-slide"><img src="${htmlEscape(f.url)}" alt="${htmlEscape(f.caption||'')}" loading="lazy" onerror="this.parentNode.querySelector('.img-err').style.display='flex';this.style.display='none'"><div class="img-err carrusel-placeholder" style="display:none;height:220px"><span style="font-size:22px">⚠️</span><span style="font-size:12px">No se pudo cargar</span></div>${f.caption?`<div class="carrusel-caption">${htmlEscape(f.caption)}</div>`:''}</div>`).join('');
+  if(!fotos.length) return `<div class="carrusel-placeholder"><span style="font-size:28px">🖼️</span><span>Sin fotos configuradas</span></div>`;
+  const fitClass=(premio.fotoAjuste||'cover')==='contain'?'fit-contain':'';
+  const h=Math.max(200,parseInt(premio.fotoAltura)||340);
+  const slides=fotos.map((f,i)=>`<div class="carrusel-slide">
+    <img src="${htmlEscape(f.url)}" alt="${htmlEscape(f.caption||'')}" loading="lazy"
+         style="height:${h}px"
+         onclick="abrirLightbox('${htmlEscape(f.url)}','${htmlEscape(f.caption||'')}')"
+         onerror="this.parentNode.querySelector('.img-err').style.display='flex';this.style.display='none'">
+    <div class="img-err carrusel-placeholder" style="display:none;height:${h}px">
+      <span style="font-size:22px">⚠️</span><span style="font-size:12px">No se pudo cargar la imagen</span>
+    </div>
+    ${f.caption?`<div class="carrusel-caption">${htmlEscape(f.caption)}</div>`:''}</div>`).join('');
   const dots=fotos.length>1?fotos.map((_,i)=>`<button class="carrusel-dot${i===0?' active':''}" onclick="irSlide('${idPremio}',${i})"></button>`).join(''):'';
   const nav=fotos.length>1?`<button class="carrusel-btn carrusel-prev" onclick="prevSlide('${idPremio}')">‹</button><button class="carrusel-btn carrusel-next" onclick="nextSlide('${idPremio}')">›</button>`:'';
-  return `<div class="carrusel" id="car-${idPremio}" data-idx="0" data-total="${fotos.length}" data-autoplay="${premio.autoplay?'1':'0'}" data-vel="${Math.max(1,parseInt(premio.autoplayVel)||4)}" ontouchstart="carTouchStart(event,'${idPremio}')" ontouchend="carTouchEnd(event,'${idPremio}')"><div class="carrusel-track" id="car-track-${idPremio}">${slides}</div>${nav}</div>${dots?`<div class="carrusel-dots" id="car-dots-${idPremio}">${dots}</div>`:''}`;
+  const hint=`<div style="position:absolute;bottom:${fotos.length>1?38:8}px;right:10px;background:rgba(0,0,0,0.4);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;pointer-events:none;z-index:3">🔍 toca para ampliar</div>`;
+  return `<div class="carrusel ${fitClass}" id="car-${idPremio}" data-idx="0" data-total="${fotos.length}"
+    data-autoplay="${premio.autoplay?'1':'0'}" data-vel="${Math.max(1,parseInt(premio.autoplayVel)||4)}"
+    ontouchstart="carTouchStart(event,'${idPremio}')" ontouchend="carTouchEnd(event,'${idPremio}')"
+    style="position:relative">
+    <div class="carrusel-track" id="car-track-${idPremio}">${slides}</div>
+    ${nav}${hint}
+  </div>${dots?`<div class="carrusel-dots" id="car-dots-${idPremio}">${dots}</div>`:''}`;
 }
 
 let _carTouchX={},_carAutoIntervals={};
@@ -1713,7 +1765,7 @@ function irSlide(pid,idx){const car=document.getElementById('car-'+pid);if(!car)
 function nextSlide(pid){const c=document.getElementById('car-'+pid);if(c) irSlide(pid,(parseInt(c.dataset.idx)||0)+1);}
 function prevSlide(pid){const c=document.getElementById('car-'+pid);if(c) irSlide(pid,(parseInt(c.dataset.idx)||0)-1);}
 function carTouchStart(e,pid){_carTouchX[pid]=e.touches[0].clientX;}
-function carTouchEnd(e,pid){const dx=e.changedTouches[0].clientX-(_carTouchX[pid]||0);if(Math.abs(dx)>48){dx<0?nextSlide(pid):prevSlide(pid);}}
+function carTouchEnd(e,pid){const dx=e.changedTouches[0].clientX-(_carTouchX[pid]||0);if(Math.abs(dx)>48){window._carSwipeOccurred=true;dx<0?nextSlide(pid):prevSlide(pid);}else{window._carSwipeOccurred=false;}}
 function iniciarAutoplayCarruseles(){Object.values(_carAutoIntervals).forEach(t=>clearInterval(t));_carAutoIntervals={};document.querySelectorAll('.carrusel[data-autoplay="1"]').forEach(car=>{const pid=car.id.replace('car-','');const vel=(parseInt(car.dataset.vel)||4)*1000;_carAutoIntervals[pid]=setInterval(()=>nextSlide(pid),vel);});}
 
 function renderPremiosPublico(){
@@ -1776,6 +1828,23 @@ function buildPremioAdminCard(p,idx,total){
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:18px">
         <label class="check-row" style="flex:1"><input type="checkbox" ${p.autoplay!==false?'checked':''} onchange="setPremioField('${p.id}','autoplay',this.checked)" style="width:auto;padding:0"><span>Autoplay</span></label>
         <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)">Vel:<input type="number" min="1" max="20" value="${p.autoplayVel||4}" style="width:50px" oninput="setPremioField('${p.id}','autoplayVel',parseInt(this.value)||4)">seg</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Altura del carrusel (px)</label>
+        <input type="number" min="150" max="700" value="${p.fotoAltura||340}"
+               oninput="setPremioField('${p.id}','fotoAltura',parseInt(this.value)||340)"
+               placeholder="340">
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Recomendado: 280–400 px. Fotos horizontales: 300. Verticales/cuadradas: 400–500.</div>
+      </div>
+      <div>
+        <label>Ajuste de foto</label>
+        <select onchange="setPremioField('${p.id}','fotoAjuste',this.value)">
+          <option value="cover"${(p.fotoAjuste||'cover')==='cover'?' selected':''}>Cubrir (recorta bordes, llena el espacio)</option>
+          <option value="contain"${(p.fotoAjuste||'cover')==='contain'?' selected':''}>Contener (muestra foto completa, sin recortar)</option>
+        </select>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px"><b>Cubrir</b>: mejor para fotos horizontales. <b>Contener</b>: mejor para fotos con diseño completo o verticales.</div>
       </div>
     </div>
     <div class="form-row full">
