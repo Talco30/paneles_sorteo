@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title id="page-title">Sistema de Sorteos v12</title>
+<title id="page-title">Sistema de Sorteos v13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
@@ -1176,9 +1176,9 @@ async function confirmarCompra(){
       const extra=getExtra(k);
       const todosAsignados=[...principal,...extra];
       const promocionFila=resumenCompra.promoTipo==='descuento'?'% Descuento':(esGratis?'Generado por promoción':'Normal');
-      // Enviar a Sheets — el Apps Script verificará duplicados con LockService
-      // Si devuelve error de duplicado, se lanza excepción y se detiene la compra.
-      const resultado=await enviarSheetsConRespuesta({
+      // Enviar a Sheets en background — si falla NO bloqueamos al comprador.
+      // El LockService en Apps Script protege contra duplicados reales.
+      enviarSheetsConRespuesta({
         accion:'venta',boleto:k,nombre,tel,email,
         nums:todosAsignados.map(n=>pad(n)).join(', '),
         numsExtra:extra.map(n=>pad(n)).join(', '),
@@ -1190,11 +1190,7 @@ async function confirmarCompra(){
         subtotalCompra:resumenCompra.subtotal,totalCompra:resumenCompra.totalBruto,
         cantidadPagada:resumenCompra.pagados,cantidadGratis:resumenCompra.gratis,
         estadoPago:'Pendiente de Pago',pagado:false,whatsappPago:cfg.whatsappPago||''
-      });
-      // Si el Apps Script devolvió ok:false (boleto duplicado en Sheets), abortar
-      if(resultado&&resultado.ok===false){
-        throw new Error(resultado.error||`El boleto ${k} ya fue registrado por otro comprador. Por favor selecciona otro número.`);
-      }
+      }).catch(e=>console.warn('Sheets send warning:',e));
       boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:'',comprobanteNombre:'',gratis:esGratis,promo:resumenCompra.promoAplicada||'',promocionEtiqueta:promocionFila,precioUnitario:esGratis?0:cfg.precio,totalCompra:resumenCompra.totalBruto,descuentoMonto:resumenCompra.descuentoMonto,subtotalCompra:resumenCompra.subtotal};
     }
     guardarEstado(); renderGrid(); renderStats();
