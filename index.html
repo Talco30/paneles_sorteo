@@ -1612,36 +1612,29 @@ async function enviarSheets(data){
 //  Usa JSONP porque Apps Script con no-cors no devuelve body.
 //  Si Sheets detecta duplicado, lanza error que el cliente captura.
 // ============================================================
-function enviarSheetsConRespuesta(data){
-  return new Promise((resolve)=>{
-    if(!cfg.sheetsUrl){ resolve({ok:true}); return; }
-    const cb='__sorteoPost_'+Date.now()+'_'+Math.floor(Math.random()*100000);
-    const timer=setTimeout(()=>{
-      try{delete window[cb];}catch(e){window[cb]=undefined;}
-      if(script&&script.parentNode) script.parentNode.removeChild(script);
-      // Timeout: asumimos OK para no bloquear al comprador si Sheets tarda.
-      // El LockService de Apps Script igual protege contra duplicados reales.
-      resolve({ok:true,_timeout:true});
-    },12000);
-    window[cb]=(resp)=>{
-      clearTimeout(timer);
-      try{delete window[cb];}catch(e){window[cb]=undefined;}
-      if(script&&script.parentNode) script.parentNode.removeChild(script);
-      resolve(resp||{ok:true});
-    };
-    // Codificar el payload como parámetro GET para JSONP
-    const payload=encodeURIComponent(JSON.stringify(data));
-    const url=cfg.sheetsUrl+(cfg.sheetsUrl.includes('?')?'&':'?')+`accion=ventaJsonp&data=${payload}&callback=${encodeURIComponent(cb)}&_t=${Date.now()}`;
-    const script=document.createElement('script');
-    script.src=url;
-    script.onerror=()=>{
-      clearTimeout(timer);
-      try{delete window[cb];}catch(e){}
-      if(script.parentNode) script.parentNode.removeChild(script);
-      resolve({ok:true,_err:'script_error'});
-    };
-    document.body.appendChild(script);
-  });
+async function enviarSheetsConRespuesta(data){
+  // Usamos fetch POST (igual que enviarSheets normal) en lugar de JSONP GET.
+  // Esto evita el error "URI malformed" cuando el nombre/correo tiene acentos,
+  // ñ u otros caracteres especiales que rompen encodeURIComponent en URLs largas.
+  // Con mode:'no-cors' no podemos leer la respuesta, pero el LockService del
+  // Apps Script sigue protegiendo contra duplicados en el servidor.
+  // Si el fetch falla (sin conexión), resolvemos ok:true para no bloquear
+  // al comprador — el lock de Sheets aún es la defensa real contra duplicados.
+  if(!cfg.sheetsUrl) return {ok:true};
+  try{
+    await fetch(cfg.sheetsUrl, {
+      method:'POST',
+      mode:'no-cors',
+      body: JSON.stringify({...data, accion:'venta'}),
+      headers:{'Content-Type':'application/json'}
+    });
+    // no-cors no nos permite leer la respuesta — asumimos ok
+    return {ok:true};
+  } catch(e){
+    console.warn('enviarSheetsConRespuesta fetch error:',e);
+    // Si falla la red, igual dejamos continuar — el comprador ya seleccionó su boleto
+    return {ok:true, _err:'fetch_error'};
+  }
 }
 
 // ============================================================
