@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title id="page-title">Sistema de Sorteos v9</title>
+<title id="page-title">Sistema de Sorteos v10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
@@ -36,6 +36,30 @@ h1,h2,h3{font-family:var(--font-head)}
 .nav-btn{padding:7px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.12);color:#fff;border:none;transition:all 0.15s;font-family:var(--font-head)}
 .nav-btn:hover{background:rgba(255,255,255,0.22)}
 .nav-btn.active{background:#fff;color:var(--purple)}
+
+/* == BARRA DE PROGRESO == */
+.progreso-wrap{background:var(--white);border-bottom:1px solid var(--gray-200);padding:10px 20px}
+.progreso-inner{max-width:960px;margin:0 auto}
+.progreso-labels{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.progreso-texto{font-size:12px;font-weight:600;font-family:var(--font-head);color:var(--text-muted)}
+.progreso-pct{font-size:13px;font-weight:700;font-family:var(--font-head);color:var(--purple)}
+.progreso-bar-bg{height:10px;background:var(--gray-100);border-radius:99px;overflow:hidden}
+.progreso-bar-fill{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--purple),#7B72E0);transition:width 0.6s ease;min-width:4px}
+.progreso-bar-fill.umbral-ok{background:linear-gradient(90deg,var(--teal),var(--teal-mid))}
+.progreso-sub{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text-muted)}
+.progreso-umbral-line{position:relative;height:0}
+.progreso-umbral-marker{position:absolute;top:-14px;width:2px;height:10px;background:var(--amber);border-radius:1px}
+.progreso-umbral-label{position:absolute;top:-26px;font-size:10px;font-weight:700;font-family:var(--font-head);color:var(--amber);white-space:nowrap;transform:translateX(-50%)}
+
+/* == CONTADOR REGRESIVO == */
+.countdown-wrap{background:var(--purple-light);border-bottom:1px solid var(--purple-mid);padding:10px 20px;display:none}
+.countdown-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.countdown-label{font-size:12px;font-weight:600;font-family:var(--font-head);color:var(--purple-dark)}
+.countdown-boxes{display:flex;gap:8px}
+.cdown-box{background:var(--white);border:1px solid var(--purple-mid);border-radius:8px;padding:6px 10px;text-align:center;min-width:48px}
+.cdown-num{font-family:var(--font-head);font-size:20px;font-weight:800;color:var(--purple-dark);line-height:1}
+.cdown-unit{font-size:10px;color:var(--purple);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px}
+.countdown-nota{font-size:11px;color:var(--purple-dark);opacity:0.75;font-style:italic}
 
 /* == LAYOUT == */
 .content{padding:20px;max-width:960px;margin:0 auto}
@@ -91,6 +115,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--purple);
 .btn-danger:hover{background:var(--red-light)}
 .btn-success{background:var(--teal);color:#fff}
 .btn-success:hover{background:#157a5a}
+.btn-whatsapp{background:#25D366;color:#fff;display:inline-flex;align-items:center;gap:6px}
+.btn-whatsapp:hover{background:#128C7E}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
@@ -119,9 +145,7 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--gray-50)}
 .sep{height:1px;background:var(--gray-100);margin:16px 0}
 
-/* ========================================
-   BILLETE DE LOTERÍA
-======================================== */
+/* == BILLETE MODAL == */
 .billete-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
 .billete-wrap{background:var(--white);border-radius:20px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25);overflow:hidden;animation:slideUp 0.35s ease}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -147,15 +171,15 @@ tr:hover td{background:var(--gray-50)}
 .billete-close:hover{background:rgba(255,255,255,0.35)}
 .billete-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
 
-/* ========================================
-   BUSCAR NÚMERO
-======================================== */
+/* Previene cierre accidental en móvil al abrir el billete */
+.billete-overlay.no-close-yet{pointer-events:none}
+.billete-overlay.no-close-yet .billete-wrap{pointer-events:all}
+
+/* == BUSCAR == */
 .buscar-wrap{display:flex;gap:8px;align-items:flex-end;margin-bottom:4px}
 .buscar-wrap input{flex:1}
 
-/* ========================================
-   PAGOS
-======================================== */
+/* == PAGOS == */
 .pago-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .pago-tab{padding:8px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-200);background:var(--white);color:var(--text-muted);font-family:var(--font-head);transition:all 0.15s}
 .pago-tab.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark)}
@@ -175,11 +199,7 @@ tr:hover td{background:var(--gray-50)}
 /* == ADMIN LOGIN == */
 .login-wrap{max-width:360px;margin:48px auto}
 
-/* == COMPROBANTE PREVIEW == */
-.comprobante-preview{width:100%;max-height:180px;object-fit:contain;border-radius:var(--radius);border:1px solid var(--gray-200);margin-top:8px;display:none}
-
-
-/* == PROCESSING / LOCK SCREEN == */
+/* == PROCESSING == */
 .processing-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.82);z-index:300;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
 .processing-box{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);box-shadow:0 24px 60px rgba(0,0,0,0.18);padding:24px 28px;text-align:center;max-width:360px;width:100%}
 .spinner{width:42px;height:42px;border:4px solid var(--purple-light);border-top-color:var(--purple);border-radius:50%;margin:0 auto 14px;animation:spin 0.9s linear infinite}
@@ -187,7 +207,6 @@ tr:hover td{background:var(--gray-50)}
 .processing-title{font-family:var(--font-head);font-size:16px;font-weight:800;color:var(--purple-dark);margin-bottom:4px}
 .processing-sub{font-size:13px;color:var(--text-muted)}
 .btn:disabled,.btn[disabled]{opacity:.62;cursor:not-allowed;transform:none!important}
-.pago-tab[disabled]{opacity:.5;cursor:not-allowed}
 .check-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius);background:var(--gray-50);min-height:42px}
 .check-row input{width:auto;margin:0;box-shadow:none}
 .check-row span{font-size:13px;font-weight:700;font-family:var(--font-head);color:var(--text)}
@@ -199,7 +218,7 @@ tr:hover td{background:var(--gray-50)}
 .logo-admin-preview-box{width:160px;height:50px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:var(--gray-50);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-muted);font-size:12px}
 .logo-admin-preview-box img{max-width:100%;max-height:100%;object-fit:contain}
 
-/* == POP UP / ANUNCIO == */
+/* == POP UP == */
 .popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:240;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
 .popup-wrap{background:var(--white);border-radius:22px;max-width:430px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,0.28);overflow:hidden;animation:slideUp 0.32s ease}
 .popup-wrap.popup-html-mode{max-width:760px;background:transparent;box-shadow:none;overflow:visible;position:relative}
@@ -209,7 +228,6 @@ tr:hover td{background:var(--gray-50)}
 .popup-wrap.popup-html-mode .popup-floating-close{display:flex;align-items:center;justify-content:center}
 .popup-html-editor{font-family:Consolas,Monaco,monospace;font-size:12px;line-height:1.35;min-height:230px}
 .popup-admin-note{font-size:11px;color:var(--text-muted);margin-top:5px;line-height:1.35}
-
 .popup-head{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;padding:18px 22px;position:relative}
 .popup-title{font-family:var(--font-head);font-size:19px;font-weight:800;line-height:1.15;padding-right:32px}
 .popup-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
@@ -228,6 +246,48 @@ tr:hover td{background:var(--gray-50)}
 /* == SORTEO RESULT == */
 .ganadores-lista{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .gan-num{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000;font-family:var(--font-head);font-size:16px;font-weight:800;box-shadow:0 3px 10px rgba(240,165,0,0.35)}
+
+/* == PÁGINA PREMIOS == */
+.premios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:20px}
+.premio-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--gray-200);overflow:hidden;box-shadow:var(--shadow)}
+.premio-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;font-family:var(--font-head);letter-spacing:0.04em}
+.premio-badge-1{background:linear-gradient(135deg,#f6c90e,#f0a500);color:#3D2000}
+.premio-badge-2{background:linear-gradient(135deg,#c0c0c0,#a8a8a8);color:#1a1a1a}
+.premio-badge-n{background:var(--purple-light);color:var(--purple-dark)}
+.premio-valor{display:inline-block;background:var(--teal-light);color:#085041;border:1px solid var(--teal-mid);border-radius:20px;font-size:12px;font-weight:700;font-family:var(--font-head);padding:3px 10px;margin-left:6px}
+.premio-titulo{font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--text);margin:10px 16px 4px}
+.premio-desc{font-size:13px;color:var(--text-muted);padding:0 16px 14px;line-height:1.55}
+.premio-desc.html-mode{color:var(--text)}
+.premio-cta{display:block;margin:0 16px 16px;text-align:center;background:var(--purple);color:#fff;border:none;border-radius:var(--radius);padding:11px 20px;font-size:13px;font-weight:700;font-family:var(--font-head);cursor:pointer;transition:all 0.15s}
+.premio-cta:hover{background:var(--purple-dark);transform:translateY(-1px)}
+.premio-header{padding:12px 16px 0;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+
+/* == CARRUSEL == */
+.carrusel{position:relative;width:100%;background:var(--gray-100);overflow:hidden;user-select:none}
+.carrusel-track{display:flex;transition:transform 0.38s cubic-bezier(.4,0,.2,1)}
+.carrusel-slide{min-width:100%;position:relative}
+.carrusel-slide img{width:100%;height:220px;object-fit:cover;display:block}
+.carrusel-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.55));color:#fff;font-size:12px;padding:18px 12px 8px;font-family:var(--font-head)}
+.carrusel-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.88);border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.18);transition:background 0.15s;z-index:2}
+.carrusel-btn:hover{background:#fff}
+.carrusel-prev{left:8px}
+.carrusel-next{right:8px}
+.carrusel-dots{display:flex;justify-content:center;gap:5px;padding:7px 0 4px;background:var(--gray-50)}
+.carrusel-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);border:none;cursor:pointer;padding:0;transition:background 0.15s}
+.carrusel-dot.active{background:var(--purple)}
+.carrusel-placeholder{width:100%;height:180px;display:flex;align-items:center;justify-content:center;background:var(--gray-100);color:var(--text-muted);font-size:13px;flex-direction:column;gap:8px}
+
+/* == ADMIN PREMIOS == */
+.premio-admin-card{background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;position:relative}
+.premio-admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.premio-admin-titulo{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--text)}
+.premio-admin-btns{display:flex;gap:5px;flex-shrink:0}
+.fotos-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:8px}
+.foto-admin-item{position:relative;border-radius:var(--radius);overflow:hidden;border:1px solid var(--gray-200);background:var(--gray-100)}
+.foto-admin-item img{width:100%;height:70px;object-fit:cover;display:block}
+.foto-admin-remove{position:absolute;top:3px;right:3px;background:rgba(163,45,45,0.85);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;line-height:1}
+.foto-admin-add{width:100%;height:70px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:transparent;color:var(--text-muted);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s}
+.foto-admin-add:hover{border-color:var(--purple);color:var(--purple)}
 </style>
 </head>
 <body>
@@ -244,21 +304,53 @@ tr:hover td{background:var(--gray-50)}
   </div>
   <div class="topbar-nav">
     <button class="nav-btn active" onclick="showPage('publico')">🎟 Boletos</button>
+    <button class="nav-btn" onclick="showPage('premios')">🏆 Premios</button>
     <button class="nav-btn" onclick="showPage('buscar')">🔍 Mi boleto</button>
     <button class="nav-btn" onclick="showPage('admin')">⚙️ Admin</button>
   </div>
 </div>
 
-<!-- ================== BLOQUEO / PROCESANDO ================== -->
+<!-- == BARRA DE PROGRESO == -->
+<div class="progreso-wrap" id="progreso-wrap">
+  <div class="progreso-inner">
+    <div class="progreso-labels">
+      <span class="progreso-texto" id="progreso-texto">Cargando...</span>
+      <span class="progreso-pct" id="progreso-pct">0%</span>
+    </div>
+    <div class="progreso-bar-bg">
+      <div class="progreso-bar-fill" id="progreso-fill" style="width:0%"></div>
+    </div>
+    <div class="progreso-sub">
+      <span id="progreso-sub-izq"></span>
+      <span id="progreso-sub-der"></span>
+    </div>
+  </div>
+</div>
+
+<!-- == CONTADOR REGRESIVO == -->
+<div class="countdown-wrap" id="countdown-wrap">
+  <div class="countdown-inner">
+    <span class="countdown-label">⏳ Faltan para el sorteo:</span>
+    <div class="countdown-boxes">
+      <div class="cdown-box"><div class="cdown-num" id="cd-dias">--</div><div class="cdown-unit">días</div></div>
+      <div class="cdown-box"><div class="cdown-num" id="cd-horas">--</div><div class="cdown-unit">horas</div></div>
+      <div class="cdown-box"><div class="cdown-num" id="cd-min">--</div><div class="cdown-unit">min</div></div>
+      <div class="cdown-box"><div class="cdown-num" id="cd-seg">--</div><div class="cdown-unit">seg</div></div>
+    </div>
+    <span class="countdown-nota" id="cd-nota"></span>
+  </div>
+</div>
+
+<!-- == PROCESSING == -->
 <div class="processing-overlay" id="processing-overlay" style="display:none">
   <div class="processing-box">
     <div class="spinner"></div>
     <div class="processing-title" id="processing-title">Procesando boleto...</div>
-    <div class="processing-sub">No cierres ni recargues esta pantalla. Estamos registrando tu información.</div>
+    <div class="processing-sub">No cierres ni recargues esta pantalla.</div>
   </div>
 </div>
 
-<!-- ================== POP UP / ANUNCIO ================== -->
+<!-- == POP UP == -->
 <div class="popup-overlay" id="popup-modal" style="display:none" onclick="cerrarPopup(event)">
   <div class="popup-wrap" id="popup-wrap" onclick="event.stopPropagation()">
     <button class="popup-floating-close" onclick="cerrarPopupDirecto()">✕</button>
@@ -273,7 +365,7 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ================== BILLETE MODAL ================== -->
+<!-- == BILLETE MODAL == -->
 <div class="billete-overlay" id="billete-modal" style="display:none" onclick="cerrarBillete(event)">
   <div class="billete-wrap" id="billete-inner">
     <div class="billete-header">
@@ -313,6 +405,7 @@ tr:hover td{background:var(--gray-50)}
         <img id="blt-comprobante-img" src="" alt="Comprobante">
       </div>
       <div class="billete-actions">
+        <button class="btn btn-whatsapp btn-sm" id="btn-compartir-wa" onclick="compartirWA()">📲 Compartir</button>
         <button class="btn btn-secondary btn-sm" onclick="imprimirBillete()">🖨️ Imprimir</button>
         <button class="btn btn-secondary btn-sm" onclick="cerrarBilleteDirecto()">Cerrar</button>
       </div>
@@ -320,7 +413,7 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ================== PÁGINA PÚBLICA ================== -->
+<!-- == PÁGINA PÚBLICA == -->
 <div class="content" id="page-publico">
   <div id="resultado-publico" class="resultado-publico"></div>
   <div class="stats-row" id="stats-publico"></div>
@@ -338,23 +431,16 @@ tr:hover td{background:var(--gray-50)}
           <div style="display:flex;align-items:center;gap:6px">
             <label style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted);margin:0">Cantidad:</label>
             <select id="sel-cantidad-random" style="width:70px;padding:6px 8px;font-size:13px">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5" selected>5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5" selected>5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
             </select>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="elegirAleatorio()">🎲 Asignar al azar</button>
         </div>
       </div>
     </div>
-    <div class="legend">
+    <div class="legend" style="margin-top:12px">
       <div class="legend-item"><div class="dot" style="background:#E1F5EE;border-color:#5DCAA5"></div>Vendido</div>
       <div class="legend-item"><div class="dot" style="background:#F1EFE8;border-color:#B4B2A9"></div>No disponible</div>
       <div class="legend-item"><div class="dot" style="background:#EEEDFE;border-color:#534AB7"></div>Seleccionado</div>
@@ -363,7 +449,6 @@ tr:hover td{background:var(--gray-50)}
     <div class="grid-wrap" id="grid-boletos"></div>
   </div>
 
-  <!-- FORM DATOS -->
   <div class="card" id="form-compra" style="display:none">
     <div class="card-title"><div class="card-icon">👤</div>Datos del participante</div>
     <div id="numeros-asignados"></div>
@@ -375,8 +460,6 @@ tr:hover td{background:var(--gray-50)}
       <div><label>Correo electrónico (opcional)</label><input type="email" id="inp-email" placeholder="juan@correo.com"></div>
     </div>
     <div id="alert-compra"></div>
-
-    <!-- PAGO -->
     <div class="sep"></div>
     <div class="card-title" style="margin-bottom:12px"><div class="card-icon">💳</div>Método de pago</div>
     <div class="pago-tabs">
@@ -384,9 +467,8 @@ tr:hover td{background:var(--gray-50)}
       <button class="pago-tab" id="tab-mercadopago" onclick="selectPagoTab('mercadopago',this)">💙 Mercado Pago</button>
       <button class="pago-tab" id="tab-paypal" onclick="selectPagoTab('paypal',this)">🔵 PayPal</button>
     </div>
-
     <div class="pago-panel active" id="pago-transferencia">
-      <div class="transferencia-datos" id="transferencia-info">
+      <div class="transferencia-datos">
         <div class="transferencia-row"><span class="transferencia-key">Banco</span><span class="transferencia-val" id="tf-banco">—</span></div>
         <div class="transferencia-row"><span class="transferencia-key">CLABE</span><span class="transferencia-val" id="tf-clabe">—</span></div>
         <div class="transferencia-row"><span class="transferencia-key">Titular</span><span class="transferencia-val" id="tf-titular">—</span></div>
@@ -395,27 +477,20 @@ tr:hover td{background:var(--gray-50)}
       <div style="margin-top:10px" class="alert alert-warn">⚠️ Tu boleto quedará como <strong>pendiente de pago</strong> hasta que el administrador confirme la transferencia.</div>
       <div id="transferencia-nota-pago"></div>
     </div>
-
     <div class="pago-panel" id="pago-mercadopago">
       <div style="text-align:center;padding:16px 0">
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Paga de forma segura con Mercado Pago. Al hacer clic serás redirigido.</p>
-        <a id="mp-link" href="#" target="_blank" class="mp-btn" onclick="registrarPagoMP()">
-          <span class="pago-logo">💙</span> Pagar con Mercado Pago
-        </a>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Paga de forma segura con Mercado Pago.</p>
+        <a id="mp-link" href="#" target="_blank" class="mp-btn"><span class="pago-logo">💙</span> Pagar con Mercado Pago</a>
         <div style="margin-top:10px" class="alert alert-info">ℹ️ Tu boleto se registrará como pendiente hasta confirmar el pago.</div>
       </div>
     </div>
-
     <div class="pago-panel" id="pago-paypal">
       <div style="text-align:center;padding:16px 0">
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Paga de forma segura con PayPal. Al hacer clic serás redirigido.</p>
-        <a id="pp-link" href="#" target="_blank" class="pp-btn" onclick="registrarPagoPP()">
-          <span class="pago-logo">🔵</span> Pagar con PayPal
-        </a>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Paga de forma segura con PayPal.</p>
+        <a id="pp-link" href="#" target="_blank" class="pp-btn"><span class="pago-logo">🔵</span> Pagar con PayPal</a>
         <div style="margin-top:10px" class="alert alert-info">ℹ️ Tu boleto se registrará como pendiente hasta confirmar el pago.</div>
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-primary" id="btn-registrar-boleto" onclick="confirmarCompra()">✓ Registrar boleto</button>
       <button class="btn btn-secondary" onclick="cancelarSeleccion()">Cancelar</button>
@@ -423,11 +498,11 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ================== PÁGINA BUSCAR ================== -->
+<!-- == PÁGINA BUSCAR == -->
 <div class="content" id="page-buscar" style="display:none">
   <div class="card">
     <div class="card-title"><div class="card-icon">🔍</div>Consultar mi boleto</div>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Ingresa el número de boleto o el número del sorteo para ver el estado de tu participación.</p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Ingresa tu número de boleto para ver el estado de tu participación.</p>
     <div class="buscar-wrap">
       <input type="text" id="inp-buscar" placeholder="Ej. 042" onkeydown="if(event.key==='Enter')buscarBoleto()">
       <button class="btn btn-primary" onclick="buscarBoleto()">Buscar</button>
@@ -436,7 +511,12 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
-<!-- ================== PÁGINA ADMIN ================== -->
+<!-- == PÁGINA PREMIOS == -->
+<div class="content" id="page-premios" style="display:none">
+  <div id="premios-publico-wrap"></div>
+</div>
+
+<!-- == PÁGINA ADMIN == -->
 <div class="content" id="page-admin" style="display:none">
   <div id="admin-login" class="login-wrap">
     <div class="card">
@@ -455,7 +535,7 @@ tr:hover td{background:var(--gray-50)}
     </div>
     <div class="stats-row" id="stats-admin"></div>
     <div class="alert alert-info" style="font-size:12px;margin-top:-6px;margin-bottom:16px">
-      ℹ️ Este resumen del panel se calcula con los datos locales de este navegador. La hoja <strong>Resumen</strong> de Google Sheets se actualiza por separado cuando se envían acciones al webhook.
+      ℹ️ Resumen calculado con datos locales. Google Sheets se actualiza cuando se envían acciones al webhook.
     </div>
 
     <!-- AJUSTES -->
@@ -469,12 +549,11 @@ tr:hover td{background:var(--gray-50)}
       <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">LOGOTIPO EN CABECERA</div>
       <div class="form-row">
         <div>
-          <label>URL del logotipo o imagen cargada</label>
-          <input type="text" id="cfg-logo-url" placeholder="https://.../logo.png o carga una imagen abajo">
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Tamaño recomendado: <strong>160 × 50 px</strong>. Máximo sugerido en cabecera: <strong>220 × 60 px</strong>.</div>
+          <label>URL del logotipo</label>
+          <input type="text" id="cfg-logo-url" placeholder="https://.../logo.png">
         </div>
         <div>
-          <label>Cambiar logotipo desde Admin</label>
+          <label>Cambiar logotipo (archivo)</label>
           <input type="file" accept="image/*" id="cfg-logo-file" onchange="subirLogoAdmin(this)">
           <div class="logo-admin-preview">
             <div class="logo-admin-preview-box" id="logo-admin-preview">Sin logo</div>
@@ -483,8 +562,8 @@ tr:hover td{background:var(--gray-50)}
         </div>
       </div>
       <div class="form-row">
-        <div><label>Ancho del logo en cabecera (px)</label><input type="number" id="cfg-logo-width" min="24" max="220" value="160"></div>
-        <div><label>Alto del logo en cabecera (px)</label><input type="number" id="cfg-logo-height" min="24" max="80" value="50"></div>
+        <div><label>Ancho logo (px)</label><input type="number" id="cfg-logo-width" min="24" max="220" value="160"></div>
+        <div><label>Alto logo (px)</label><input type="number" id="cfg-logo-height" min="24" max="80" value="50"></div>
       </div>
       <div class="sep"></div>
       <div class="form-row">
@@ -502,18 +581,16 @@ tr:hover td{background:var(--gray-50)}
       </div>
       <div class="form-row">
         <div>
-          <label>Máximo de boletos públicos (0 = usar todo el rango)</label>
+          <label>Máximo de boletos públicos (0 = todo el rango)</label>
           <input type="number" id="cfg-rango-publico" min="0" value="0" placeholder="Ej. 250">
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Ej: 250 → grilla muestra 000–249. El resto es rango reservado.</div>
         </div>
         <div>
-          <label>Números extras del rango reservado por boleto</label>
+          <label>Números extras del rango reservado</label>
           <input type="number" id="cfg-extras-reservado" min="0" value="0" placeholder="Ej. 3">
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Ej: 3 → cada boleto vendido recibe además 3 números del 250–999.</div>
         </div>
       </div>
       <div class="sep"></div>
-      <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">PROMOCIONES / PAQUETES</div>
+      <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">PROMOCIONES</div>
       <div class="form-row">
         <div>
           <label>Promoción activa</label>
@@ -522,37 +599,23 @@ tr:hover td{background:var(--gray-50)}
             <option value="descuento">Descuento por volumen</option>
             <option value="gratis">Boletos gratis por paquete</option>
           </select>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Solo una promoción se aplica por compra. Puedes dejarlo en Ninguna.</div>
         </div>
         <div>
-          <label>Resumen de la promoción</label>
+          <label>Resumen</label>
           <div id="promo-admin-resumen" class="alert alert-info" style="font-size:12px;margin:0">Sin promoción activa.</div>
         </div>
       </div>
       <div class="form-row">
-        <div>
-          <label>Escenario 1: descuento desde cuántos boletos</label>
-          <input type="number" id="cfg-promo-desc-min" min="1" value="4">
-        </div>
-        <div>
-          <label>Escenario 1: % descuento</label>
-          <input type="number" id="cfg-promo-desc-pct" min="0" max="100" value="10">
-        </div>
+        <div><label>Descuento desde cuántos boletos</label><input type="number" id="cfg-promo-desc-min" min="1" value="4"></div>
+        <div><label>% descuento</label><input type="number" id="cfg-promo-desc-pct" min="0" max="100" value="10"></div>
       </div>
       <div class="form-row">
-        <div>
-          <label>Escenario 2: compra mínima de boletos</label>
-          <input type="number" id="cfg-promo-gratis-min" min="1" value="10">
-        </div>
-        <div>
-          <label>Escenario 2: boletos gratis</label>
-          <input type="number" id="cfg-promo-gratis-cantidad" min="1" value="2">
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Los boletos gratis se asignan automáticamente al azar e incluyen sus números extras del rango reservado.</div>
-        </div>
+        <div><label>Compra mínima para gratis</label><input type="number" id="cfg-promo-gratis-min" min="1" value="10"></div>
+        <div><label>Boletos gratis</label><input type="number" id="cfg-promo-gratis-cantidad" min="1" value="2"></div>
       </div>
       <div class="form-row">
         <div><label>Fecha tentativa del sorteo</label><input type="date" id="cfg-fecha-sorteo"></div>
-        <div><label>Nota sobre fecha (ej. "sujeto a venta total")</label><input type="text" id="cfg-nota-fecha" placeholder="Sujeto a completar venta"></div>
+        <div><label>Nota sobre fecha</label><input type="text" id="cfg-nota-fecha" placeholder="Sujeto a completar venta"></div>
       </div>
       <div class="sep"></div>
       <div style="font-size:13px;font-weight:700;font-family:var(--font-head);margin-bottom:10px;color:var(--text-muted)">POP UP / ANUNCIO PÚBLICO</div>
@@ -562,17 +625,17 @@ tr:hover td{background:var(--gray-50)}
           <label>Tipo de pop up</label>
           <select id="cfg-popup-mode" onchange="actualizarModoPopupAdmin()">
             <option value="simple">Texto simple</option>
-            <option value="html">HTML personalizado / alto impacto</option>
+            <option value="html">HTML personalizado</option>
           </select>
         </div>
       </div>
       <div id="popup-simple-fields">
         <div class="form-row">
-          <div><label>Título del pop up</label><input type="text" id="cfg-popup-title" placeholder="Aviso importante"></div>
+          <div><label>Título</label><input type="text" id="cfg-popup-title" placeholder="Aviso importante"></div>
           <div><label>Texto del botón</label><input type="text" id="cfg-popup-button" placeholder="Entendido"></div>
         </div>
         <div class="form-row full">
-          <div><label>Mensaje del pop up</label><textarea id="cfg-popup-message" rows="4" placeholder="Ej. Cambio de fecha, promoción especial, ganador anunciado, etc."></textarea></div>
+          <div><label>Mensaje</label><textarea id="cfg-popup-message" rows="4" placeholder="Ej. Cambio de fecha, promoción especial..."></textarea></div>
         </div>
       </div>
       <div id="popup-html-fields" style="display:none">
@@ -580,11 +643,11 @@ tr:hover td{background:var(--gray-50)}
           <div>
             <label>HTML del pop up</label>
             <textarea id="cfg-popup-html" class="popup-html-editor" rows="12" placeholder="Pega aquí tu diseño HTML personalizado"></textarea>
-            <div class="popup-admin-note">Usa esta opción solo con HTML creado por ti. No pegues scripts externos. Recomendado: ancho máximo 520–680 px.</div>
+            <div class="popup-admin-note">Solo HTML creado por ti. No pegues scripts externos.</div>
           </div>
         </div>
         <div class="btn-row" style="margin-top:0;margin-bottom:8px">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="cargarEjemploPopupHtml()">✨ Cargar ejemplo de promoción</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="cargarEjemploPopupHtml()">✨ Cargar ejemplo</button>
         </div>
       </div>
       <div class="form-row">
@@ -612,25 +675,36 @@ tr:hover td{background:var(--gray-50)}
       </div>
       <div class="sep"></div>
       <div class="form-row">
-        <div><label>URL Google Apps Script (Sheets)</label><input type="text" id="cfg-sheets-url" placeholder="https://script.google.com/macros/s/..."></div>
-        <div><label>Nueva contraseña admin (dejar vacío = no cambiar)</label><input type="password" id="cfg-pass-nueva" placeholder="••••••"></div>
+        <div><label>URL Google Apps Script</label><input type="text" id="cfg-sheets-url" placeholder="https://script.google.com/macros/s/..."></div>
+        <div><label>Nueva contraseña admin (vacío = no cambiar)</label><input type="password" id="cfg-pass-nueva" placeholder="••••••"></div>
       </div>
       <div id="alert-cfg"></div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="guardarConfig()">💾 Guardar ajustes</button>
         <button class="btn btn-secondary" onclick="probarSheets()">🔗 Probar Sheets</button>
-        <button class="btn btn-secondary" onclick="abrirPruebaPing()">🧪 Abrir Ping</button>
-        <button class="btn btn-secondary" onclick="cargarDesdeSheets({silencioso:false})">🔄 Cargar datos desde Sheets</button>
-        <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="reiniciarTodo()">⚠️ Reiniciar todo y configuración</button>
+        <button class="btn btn-secondary" onclick="abrirPruebaPing()">🧪 Ping</button>
+        <button class="btn btn-secondary" onclick="cargarDesdeSheets({silencioso:false})">🔄 Cargar desde Sheets</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="reiniciarTodo()">⚠️ Reiniciar todo</button>
       </div>
     </div>
 
-    <!-- RESULTADO DEL SORTEO -->
+    <!-- PREMIOS -->
+    <div class="card">
+      <div class="card-title"><div class="card-icon">🏆</div>Premios del sorteo</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Agrega, edita y reordena los premios. Cada premio tiene su propio carrusel de fotos y descripción.</p>
+      <div id="premios-admin-lista"></div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-primary" onclick="agregarPremio()">+ Agregar premio</button>
+      </div>
+      <div id="alert-premios"></div>
+    </div>
+
+    <!-- RESULTADO -->
     <div class="card">
       <div class="card-title"><div class="card-icon">🏆</div>Resultado del sorteo</div>
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Ingresa los números ganadores. Los boletos que contengan estos números se marcarán como ganadores.</p>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Ingresa los números ganadores separados por coma.</p>
       <div class="form-row">
-        <div><label>Números ganadores (separados por coma)</label><input type="text" id="cfg-ganadores" placeholder="Ej. 042, 317, 956"></div>
+        <div><label>Números ganadores</label><input type="text" id="cfg-ganadores" placeholder="Ej. 042, 317, 956"></div>
         <div style="display:flex;align-items:flex-end">
           <button class="btn btn-success" onclick="guardarGanadores()">🏆 Publicar resultado</button>
         </div>
@@ -659,13 +733,10 @@ tr:hover td{background:var(--gray-50)}
       <div class="card-title"><div class="card-icon">📋</div>Boletos vendidos</div>
       <div class="btn-row" style="margin-bottom:12px">
         <button class="btn btn-secondary btn-sm" onclick="exportarCSV()">⬇️ Exportar CSV</button>
-        <button class="btn btn-danger btn-sm" onclick="liberarPendientes()">⏳ Liberar todos los pendientes</button>
-        <button class="btn btn-danger btn-sm" onclick="reestablecerBoletosACero()">🧹 Reestablecer boletos a ceros</button>
+        <button class="btn btn-danger btn-sm" onclick="liberarPendientes()">⏳ Liberar pendientes</button>
+        <button class="btn btn-danger btn-sm" onclick="reestablecerBoletosACero()">🧹 Reestablecer a ceros</button>
       </div>
       <div id="alert-mantenimiento"></div>
-      <div class="alert alert-info" style="font-size:12px;margin-bottom:12px">
-        ℹ️ Usa <strong>Liberar</strong> para borrar un boleto individual de la lista. Usa <strong>Liberar todos los pendientes</strong> cuando no hayan confirmado pago. Usa <strong>Reestablecer boletos a ceros</strong> para iniciar un sorteo nuevo conservando la configuración.
-      </div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Boleto</th><th>Promoción</th><th>Números</th><th>Nombre</th><th>Pago</th><th>Comprobante</th><th>Ganador</th><th>Acciones</th></tr></thead>
@@ -677,46 +748,59 @@ tr:hover td{background:var(--gray-50)}
     <!-- SHEETS STATUS -->
     <div class="card">
       <div class="card-title"><div class="card-icon">📊</div>Estado Google Sheets</div>
-      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">v13 popup simple/HTML / hoja Control_Seguimiento_Sorteo: Google Sheets será la base principal. Configura la URL y presiona “Probar Sheets” para cargar datos.</p></div>
+      <div id="sheets-status"><p style="font-size:13px;color:var(--text-muted)">Configura la URL del webhook para sincronizar ventas.</p></div>
     </div>
   </div>
 </div>
 
 <script>
-// ==========================================
+// ============================================================
+//  MEJORA 1: Hash SHA-256 para contraseña admin
+// ============================================================
+async function hashPass(raw) {
+  const enc = new TextEncoder().encode(raw);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ============================================================
 //  ESTADO
-// ==========================================
-let PASS_ADMIN = "admin123";
-const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbxiOXLRWl_4aSV9N09Pfsy3bfcJcjk6NSJDKa1uzuY4ooxFx-CnqGLOiy_8UYwjX70hmQ/exec"; // V13: URL fija de Apps Script funcionando
+// ============================================================
+// PASS_ADMIN ahora almacena el hash SHA-256, nunca el texto plano.
+// Valor inicial vacío; se carga desde localStorage o se inicializa
+// en primer uso.
+let PASS_ADMIN_HASH = "";
+let PASS_INICIALIZADO = false;
+
+const SHEETS_URL_FIJA = "https://script.google.com/macros/s/AKfycbxiOXLRWl_4aSV9N09Pfsy3bfcJcjk6NSJDKa1uzuY4ooxFx-CnqGLOiy_8UYwjX70hmQ/exec";
 let cfg = {
   nombre:"Sorteo Demo", precio:100, digitos:3, numsPorBoleto:1,
   sheetsUrl:SHEETS_URL_FIJA, banco:"", clabe:"", titular:"", whatsappPago:"",
   mpLink:"", ppLink:"", mpEnabled:false, ppEnabled:false,
   logoUrl:"", logoWidth:160, logoHeight:50,
   fechaSorteo:"", notaFecha:"Sujeto a completar venta",
-  popupEnabled:false, popupMode:"simple", popupTitle:"Aviso importante", popupMessage:"", popupHtml:"", popupButton:"Entendido", popupLastShownKey:"",
-  // Promociones: solo una puede estar activa a la vez: none, descuento o gratis.
-  promoTipo:"none",
-  promoDescuentoMin:4,
-  promoDescuentoPct:10,
-  promoGratisMin:10,
-  promoGratisCantidad:2,
-  ganadores:[],
-  rangoPublicoMax: 0,   
-  extrasReservado: 0    
+  popupEnabled:false, popupMode:"simple", popupTitle:"Aviso importante",
+  popupMessage:"", popupHtml:"", popupButton:"Entendido",
+  promoTipo:"none", promoDescuentoMin:4, promoDescuentoPct:10,
+  promoGratisMin:10, promoGratisCantidad:2,
+  ganadores:[], rangoPublicoMax:0, extrasReservado:0,
+  premios:[]  // array dinámico de premios — v11
 };
 let boletos = {};
 let bloqueados = new Set();
-let seleccionados = []; // boletos elegidos/pagados por el comprador
-let numerosAsignadosPorBoleto = {}; // {boleto: {principal:[], extra:[]}}
-let boletosPromoGratis = []; // boletos públicos asignados gratis por promoción
-let numerosPromoPorBoleto = {}; // {boleto gratis: {principal:[], extra:[]}}
+let seleccionados = [];
+let numerosAsignadosPorBoleto = {};
+let boletosPromoGratis = [];
+let numerosPromoPorBoleto = {};
 let adminLogado = false;
 let compraProcesando = false;
+let _billeteActualKeys = [];
+let _billeteActualNombre = "";
+let _billeteActualSubtotal = 0;
 
-// ==========================================
+// ============================================================
 //  PERSISTENCIA
-// ==========================================
+// ============================================================
 function guardarEstado(){
   const bVendidos = {};
   for(const [k,v] of Object.entries(boletos)){
@@ -725,431 +809,164 @@ function guardarEstado(){
   localStorage.setItem('s_cfg', JSON.stringify(cfg));
   localStorage.setItem('s_boletos', JSON.stringify(bVendidos));
   localStorage.setItem('s_bloq', JSON.stringify([...bloqueados]));
-  localStorage.setItem('s_pass', PASS_ADMIN);
+  // Guardar hash, nunca texto plano
+  if(PASS_ADMIN_HASH) localStorage.setItem('s_pass_hash', PASS_ADMIN_HASH);
 }
-function cargarEstado(){
+
+async function cargarEstado(){
   try{
     const c=localStorage.getItem('s_cfg'); if(c) cfg={...cfg,...JSON.parse(c)};
-    // En versión hospedada, la URL integrada debe ganar sobre cualquier localStorage viejo.
-    if(SHEETS_URL_FIJA) cfg.sheetsUrl = SHEETS_URL_FIJA;
+    if(SHEETS_URL_FIJA) cfg.sheetsUrl=SHEETS_URL_FIJA;
     const b=localStorage.getItem('s_boletos');
     if(b){ for(const [k,v] of Object.entries(JSON.parse(b))) boletos[k]=v; }
     const bl=localStorage.getItem('s_bloq'); if(bl) bloqueados=new Set(JSON.parse(bl));
-    const pa=localStorage.getItem('s_pass'); if(pa) PASS_ADMIN=pa;
-  }catch(e){}
+
+    // Migración: si hay contraseña en texto plano (s_pass), hashearla y borrarla
+    const passVieja = localStorage.getItem('s_pass');
+    const passHash = localStorage.getItem('s_pass_hash');
+    if(passHash){
+      PASS_ADMIN_HASH = passHash;
+      PASS_INICIALIZADO = true;
+    } else if(passVieja){
+      // Primera vez: hashear la contraseña vieja y borrar el texto plano
+      PASS_ADMIN_HASH = await hashPass(passVieja);
+      PASS_INICIALIZADO = true;
+      localStorage.setItem('s_pass_hash', PASS_ADMIN_HASH);
+      localStorage.removeItem('s_pass');
+    } else {
+      // Sistema nuevo, sin contraseña guardada: hash de "admin123" por defecto
+      PASS_ADMIN_HASH = await hashPass("admin123");
+      PASS_INICIALIZADO = true;
+      localStorage.setItem('s_pass_hash', PASS_ADMIN_HASH);
+    }
+  }catch(e){ console.error("cargarEstado:", e); }
 }
 
-// ==========================================
+// ============================================================
 //  INIT / HELPERS
-// ==========================================
+// ============================================================
 function total(){ return Math.pow(10,cfg.digitos); }
 function pad(n){ return String(n).padStart(cfg.digitos,'0'); }
-function normalizarNumeroId(valor){
-  const txt=String(valor ?? '').trim();
-  const match=txt.match(/\d+/);
-  if(!match) return '';
-  return String(parseInt(match[0],10));
-}
-function agregarNumerosASet(valor,set){
-  if(valor===undefined||valor===null) return;
-  if(Array.isArray(valor)){
-    valor.forEach(v=>agregarNumerosASet(v,set));
-    return;
-  }
-  const matches=String(valor).match(/\d+/g)||[];
-  matches.forEach(v=>{
-    const key=normalizarNumeroId(v);
-    if(key!=='') set.add(key);
-  });
-}
-function obtenerNumerosVendidosAsignadosLocal(){
-  // Incluye TODO número ya entregado en una venta activa:
-  // boleto principal + números asignados + extras.
-  const usados=new Set();
-  for(const [bk,bv] of Object.entries(boletos)){
-    if(bv && bv.estado==='vendido'){
-      agregarNumerosASet(bk,usados);
-      agregarNumerosASet(bv.nums,usados);
-      agregarNumerosASet(bv.numsExtra,usados);
-    }
-  }
-  return usados;
-}
-function numeroYaEntregadoLocal(k){
-  return obtenerNumerosVendidosAsignadosLocal().has(normalizarNumeroId(k));
-}
-function whatsappDisplay(){ return (cfg.whatsappPago||'').trim() || 'WhatsApp del administrador'; }
-function whatsappUrl(){
-  let n=(cfg.whatsappPago||'').replace(/\D/g,'');
-  if(n.length===10) n='52'+n;
-  return n?`https://wa.me/${n}`:'#';
-}
-function notaPagoHtml(){
-  const wa=whatsappDisplay();
-  const link=whatsappUrl();
-  const waHtml=link==='#'?`<strong>${wa}</strong>`:`<a class="whatsapp-link" href="${link}" target="_blank">${wa}</a>`;
-  return `<div class="alert alert-warn" style="margin-top:12px;text-align:left">⏰ Tu boleto quedará separado por <strong>24 horas</strong>. Para confirmarlo, envía por WhatsApp el comprobante de transferencia al ${waHtml}.</div>`;
-}
-function numerosMostradosPorBoleto(){
-  const base=Math.max(1, parseInt(cfg.numsPorBoleto)||1);
-  const extras=Math.max(0, parseInt(cfg.extrasReservado)||0);
-  return base + extras;
+function normalizarNumeroId(valor){ const txt=String(valor??'').trim(); const match=txt.match(/\d+/); if(!match) return ''; return String(parseInt(match[0],10)); }
+function agregarNumerosASet(valor,set){ if(valor===undefined||valor===null) return; if(Array.isArray(valor)){ valor.forEach(v=>agregarNumerosASet(v,set)); return; } const matches=String(valor).match(/\d+/g)||[]; matches.forEach(v=>{ const key=normalizarNumeroId(v); if(key!=='') set.add(key); }); }
+function obtenerNumerosVendidosAsignadosLocal(){ const usados=new Set(); for(const [bk,bv] of Object.entries(boletos)){ if(bv&&bv.estado==='vendido'){ agregarNumerosASet(bk,usados); agregarNumerosASet(bv.nums,usados); agregarNumerosASet(bv.numsExtra,usados); } } return usados; }
+function numeroYaEntregadoLocal(k){ return obtenerNumerosVendidosAsignadosLocal().has(normalizarNumeroId(k)); }
+function whatsappUrl(){ let n=(cfg.whatsappPago||'').replace(/\D/g,''); if(n.length===10) n='52'+n; return n?`https://wa.me/${n}`:'#'; }
+function whatsappDisplay(){ return (cfg.whatsappPago||'').trim()||'WhatsApp del administrador'; }
+function notaPagoHtml(){ const wa=whatsappDisplay(); const link=whatsappUrl(); const waHtml=link==='#'?`<strong>${wa}</strong>`:`<a class="whatsapp-link" href="${link}" target="_blank">${wa}</a>`; return `<div class="alert alert-warn" style="margin-top:12px;text-align:left">⏰ Tu boleto quedará separado por <strong>24 horas</strong>. Para confirmarlo, envía el comprobante por WhatsApp al ${waHtml}.</div>`; }
+function totalPublico(){ if(cfg.rangoPublicoMax>0) return Math.min(cfg.rangoPublicoMax,total()); return total(); }
+function rangoReservadoDisponibles(excluir){ const inicio=totalPublico(); const fin=total(); const disponibles=[]; for(let i=inicio;i<fin;i++){ const k=normalizarNumeroId(i); if(!excluir.has(k)) disponibles.push(i); } return disponibles; }
+function boletoVacio(){ return {estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:'',gratis:false,promo:'',precioUnitario:0,totalCompra:0,descuentoMonto:0,subtotalCompra:0}; }
+function initBoletos(){ const tp=totalPublico(); for(let i=0;i<tp;i++){ const k=pad(i); if(!boletos[k]) boletos[k]=boletoVacio(); } }
+function numerosMostradosPorBoleto(){ return Math.max(1,parseInt(cfg.numsPorBoleto)||1)+Math.max(0,parseInt(cfg.extrasReservado)||0); }
+function fechaSorteoTextoCorto(){ if(!cfg.fechaSorteo) return 'Fecha tentativa: por definir'; const d=new Date(cfg.fechaSorteo+'T12:00:00'); return `Fecha tentativa: ${d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`; }
+function htmlEscape(str){ return String(str??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
+
+// ============================================================
+//  MEJORA 2: BARRA DE PROGRESO
+// ============================================================
+function renderProgreso(){
+  const tot=totalPublico();
+  const vend=Object.values(boletos).filter(b=>b.estado==='vendido').length;
+  const pct=tot>0?Math.round(vend/tot*100):0;
+  const umbral=90;
+  const umbralBoletos=Math.ceil(tot*umbral/100);
+  const fill=document.getElementById('progreso-fill');
+  const pctEl=document.getElementById('progreso-pct');
+  const textoEl=document.getElementById('progreso-texto');
+  const subIzq=document.getElementById('progreso-sub-izq');
+  const subDer=document.getElementById('progreso-sub-der');
+  if(!fill) return;
+  fill.style.width=Math.max(pct,0.5)+'%';
+  fill.className='progreso-bar-fill'+(pct>=umbral?' umbral-ok':'');
+  pctEl.textContent=pct+'% vendido';
+  textoEl.textContent=vend>0?`${vend.toLocaleString('es-MX')} de ${tot.toLocaleString('es-MX')} boletos vendidos`:`${tot.toLocaleString('es-MX')} boletos disponibles`;
+  subIzq.textContent=`${(tot-vend).toLocaleString('es-MX')} disponibles`;
+  const faltanUmbral=Math.max(0,umbralBoletos-vend);
+  subDer.textContent=faltanUmbral>0?`Faltan ${faltanUmbral} para el umbral de sorteo (${umbral}%)`:`✓ Umbral de sorteo alcanzado`;
+  subDer.style.color=faltanUmbral===0?'var(--teal)':'';
 }
 
-function promoActiva(){
-  return cfg.promoTipo==='descuento' || cfg.promoTipo==='gratis' ? cfg.promoTipo : 'none';
-}
-function promoDescuentoPctActual(){
-  if(promoActiva()!=='descuento') return 0;
-  const min=Math.max(1, parseInt(cfg.promoDescuentoMin)||1);
-  const pct=Math.min(Math.max(parseFloat(cfg.promoDescuentoPct)||0,0),100);
-  return seleccionados.length>=min ? pct : 0;
-}
-function promoGratisRequeridos(){
-  if(promoActiva()!=='gratis') return 0;
-  const min=Math.max(1, parseInt(cfg.promoGratisMin)||1);
-  const cantidad=Math.max(1, parseInt(cfg.promoGratisCantidad)||1);
-  return seleccionados.length>=min ? cantidad : 0;
-}
-function descripcionPromoActual(){
-  if(promoActiva()==='descuento'){
-    return `Compra ${cfg.promoDescuentoMin||1} boleto${(cfg.promoDescuentoMin||1)>1?'s':''} o más y recibe ${cfg.promoDescuentoPct||0}% de descuento.`;
+// ============================================================
+//  MEJORA 3: CONTADOR REGRESIVO
+// ============================================================
+let _countdownInterval = null;
+function iniciarContador(){
+  if(_countdownInterval) clearInterval(_countdownInterval);
+  const wrap=document.getElementById('countdown-wrap');
+  if(!cfg.fechaSorteo){ if(wrap) wrap.style.display='none'; return; }
+  const meta=new Date(cfg.fechaSorteo+'T23:59:59');
+  const ahora=new Date();
+  if(meta<=ahora){ if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='block';
+  const nota=document.getElementById('cd-nota');
+  if(nota) nota.textContent=cfg.notaFecha||'';
+  function tick(){
+    const now=new Date();
+    const diff=meta-now;
+    if(diff<=0){ clearInterval(_countdownInterval); if(wrap) wrap.style.display='none'; return; }
+    const dias=Math.floor(diff/86400000);
+    const horas=Math.floor((diff%86400000)/3600000);
+    const min=Math.floor((diff%3600000)/60000);
+    const seg=Math.floor((diff%60000)/1000);
+    document.getElementById('cd-dias').textContent=String(dias).padStart(2,'0');
+    document.getElementById('cd-horas').textContent=String(horas).padStart(2,'0');
+    document.getElementById('cd-min').textContent=String(min).padStart(2,'0');
+    document.getElementById('cd-seg').textContent=String(seg).padStart(2,'0');
   }
-  if(promoActiva()==='gratis'){
-    return `Compra ${cfg.promoGratisMin||1} boleto${(cfg.promoGratisMin||1)>1?'s':''} o más y recibe ${cfg.promoGratisCantidad||1} boleto${(cfg.promoGratisCantidad||1)>1?'s':''} gratis.`;
-  }
-  return 'Sin promoción activa.';
-}
-function calcularResumenCompra(){
-  const pagados=seleccionados.length;
-  const gratis=boletosPromoGratis.length;
-  const totalBruto=pagados*(parseFloat(cfg.precio)||0);
-  const descuentoPct=promoDescuentoPctActual();
-  const descuentoMonto=Math.round((totalBruto*descuentoPct/100)*100)/100;
-  const subtotal=Math.max(0, Math.round((totalBruto-descuentoMonto)*100)/100);
-  const promoTipo=promoActiva();
-  let promoAplicada='';
-  if(promoTipo==='descuento' && descuentoPct>0) promoAplicada=`Descuento ${descuentoPct}% por volumen`;
-  if(promoTipo==='gratis' && gratis>0) promoAplicada=`${gratis} boleto${gratis>1?'s':''} gratis por paquete`;
-  return {pagados,gratis,totalBoletos:pagados+gratis,totalBruto,descuentoPct,descuentoMonto,subtotal,promoTipo,promoAplicada,descripcion:descripcionPromoActual(),boletosPagados:[...seleccionados],boletosGratis:[...boletosPromoGratis]};
-}
-function agregarNumerosDeTicketASet(k, data, set){
-  agregarNumerosASet(k,set);
-  if(data){
-    agregarNumerosASet(data.principal,set);
-    agregarNumerosASet(data.extra,set);
-  }
-}
-function obtenerNumerosSeleccionadosActuales(){
-  const usados=new Set();
-  for(const sk of seleccionados){
-    agregarNumerosDeTicketASet(sk,numerosAsignadosPorBoleto[sk],usados);
-  }
-  for(const pk of boletosPromoGratis){
-    agregarNumerosDeTicketASet(pk,numerosPromoPorBoleto[pk],usados);
-  }
-  return usados;
-}
-function generarNumerosDesdeSet(k, usados){
-  const principal=parseInt(k,10);
-  const nums=[principal];
-  const principalKey=normalizarNumeroId(principal);
-  if(usados.has(principalKey)) throw new Error(`El número ${pad(principal)} ya fue asignado y no puede repetirse.`);
-  usados.add(principalKey);
-  if(cfg.extrasReservado>0 && totalPublico()<total()){
-    const disponiblesReservado=rangoReservadoDisponibles(usados);
-    if(disponiblesReservado.length<cfg.extrasReservado){
-      throw new Error(`No hay suficientes números extras únicos disponibles. Disponibles: ${disponiblesReservado.length}, requeridos: ${cfg.extrasReservado}.`);
-    }
-    const mezclados=[...disponiblesReservado].sort(()=>Math.random()-0.5);
-    const extras=mezclados.slice(0,cfg.extrasReservado).sort((a,b)=>a-b);
-    extras.forEach(n=>usados.add(normalizarNumeroId(n)));
-    return {principal:nums,extra:extras};
-  }
-  return {principal:nums,extra:[]};
-}
-function limpiarPromoGratis(){
-  boletosPromoGratis=[];
-  numerosPromoPorBoleto={};
-}
-function actualizarPromoGratis(){
-  limpiarPromoGratis();
-  const requeridos=promoGratisRequeridos();
-  if(requeridos<=0) return;
-  const usados=obtenerNumerosVendidosAsignadosLocal();
-  for(const sk of seleccionados){
-    agregarNumerosDeTicketASet(sk,numerosAsignadosPorBoleto[sk],usados);
-  }
-  const disponibles=[];
-  for(let i=0;i<totalPublico();i++){
-    const k=pad(i);
-    if(bloqueados.has(k)) continue;
-    if(boletos[k]?.estado==='vendido') continue;
-    if(seleccionados.includes(k)) continue;
-    if(usados.has(normalizarNumeroId(k))) continue;
-    disponibles.push(k);
-  }
-  const mezclados=[...disponibles].sort(()=>Math.random()-0.5);
-  for(const k of mezclados){
-    if(boletosPromoGratis.length>=requeridos) break;
-    try{
-      const gen=generarNumerosDesdeSet(k,usados);
-      boletosPromoGratis.push(k);
-      numerosPromoPorBoleto[k]=gen;
-    }catch(e){}
-  }
-  if(boletosPromoGratis.length<requeridos){
-    setAlert('alert-compra',`La promoción requiere ${requeridos} boleto(s) gratis, pero solo hay ${boletosPromoGratis.length} disponible(s) sin repetir números.`,'warn');
-  }
-}
-function actualizarResumenPromoAdmin(){
-  const div=document.getElementById('promo-admin-resumen');
-  if(!div) return;
-  const tipo=(document.getElementById('cfg-promo-tipo')?.value)||cfg.promoTipo||'none';
-  const dMin=parseInt(document.getElementById('cfg-promo-desc-min')?.value)||cfg.promoDescuentoMin||4;
-  const dPct=parseFloat(document.getElementById('cfg-promo-desc-pct')?.value)||cfg.promoDescuentoPct||10;
-  const gMin=parseInt(document.getElementById('cfg-promo-gratis-min')?.value)||cfg.promoGratisMin||10;
-  const gQty=parseInt(document.getElementById('cfg-promo-gratis-cantidad')?.value)||cfg.promoGratisCantidad||2;
-  if(tipo==='descuento') div.innerHTML=`Compra ${dMin} boleto${dMin>1?'s':''} o más → ${dPct}% de descuento.`;
-  else if(tipo==='gratis') div.innerHTML=`Compra ${gMin} boleto${gMin>1?'s':''} o más → ${gQty} boleto${gQty>1?'s':''} gratis, cada uno con sus extras.`;
-  else div.innerHTML='Sin promoción activa.';
-}
-function fechaSorteoTextoCorto(){
-  if(!cfg.fechaSorteo) return 'Fecha tentativa: por definir';
-  const d=new Date(cfg.fechaSorteo+'T12:00:00');
-  const fecha=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  return `Fecha tentativa del sorteo: ${fecha}`;
-}
-function actualizarCabecera(){
-  const logoBox=document.getElementById('topbar-logo-box');
-  const logoImg=document.getElementById('topbar-logo-img');
-  const w=Math.min(Math.max(parseInt(cfg.logoWidth)||160,24),220);
-  const h=Math.min(Math.max(parseInt(cfg.logoHeight)||50,24),80);
-  if(logoBox && logoImg){
-    if(cfg.logoUrl){
-      logoImg.src=cfg.logoUrl;
-      logoBox.style.display='flex';
-      logoBox.style.width=w+'px';
-      logoBox.style.height=h+'px';
-    }else{
-      logoImg.removeAttribute('src');
-      logoBox.style.display='none';
-    }
-  }
-  const nombre=document.getElementById('sorteo-nombre');
-  const sub=document.getElementById('sorteo-sub');
-  const fecha=document.getElementById('sorteo-fecha-line');
-  if(nombre) nombre.textContent=cfg.nombre||'Sorteo';
-  const n=numerosMostradosPorBoleto();
-  if(sub) sub.textContent=`$${(cfg.precio||0).toLocaleString('es-MX')} por boleto · ${n} número${n>1?'s':''} por boleto`;
-  if(fecha) fecha.textContent=fechaSorteoTextoCorto();
-  document.title=(cfg.nombre||'Sorteo')+' — Sorteo';
-}
-function actualizarPreviewLogoAdmin(){
-  const prev=document.getElementById('logo-admin-preview');
-  if(!prev) return;
-  if(cfg.logoUrl){
-    prev.innerHTML=`<img src="${cfg.logoUrl}" alt="Preview logo">`;
-  }else{
-    prev.textContent='Sin logo';
-  }
-}
-function subirLogoAdmin(input){
-  const file=input.files && input.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){setAlert('alert-cfg','El archivo del logo debe ser una imagen.','err');return;}
-  const reader=new FileReader();
-  reader.onload=e=>{
-    cfg.logoUrl=e.target.result;
-    const urlInput=document.getElementById('cfg-logo-url');
-    if(urlInput) urlInput.value=cfg.logoUrl;
-    actualizarCabecera();
-    actualizarPreviewLogoAdmin();
-    setAlert('alert-cfg','Logo cargado. Presiona Guardar ajustes para conservarlo.','info');
-  };
-  reader.readAsDataURL(file);
-}
-function quitarLogoAdmin(){
-  cfg.logoUrl='';
-  const urlInput=document.getElementById('cfg-logo-url');
-  const fileInput=document.getElementById('cfg-logo-file');
-  if(urlInput) urlInput.value='';
-  if(fileInput) fileInput.value='';
-  actualizarCabecera();
-  actualizarPreviewLogoAdmin();
-}
-function htmlEscape(str){
-  return String(str??'').replace(/[&<>'"]/g, ch=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[ch]));
+  tick();
+  _countdownInterval=setInterval(tick,1000);
 }
 
-function popupHtmlEjemplo(){
-  return `<div style="
-  max-width: 520px;
-  margin: 20px auto;
-  padding: 22px 26px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #fff7ed, #ffffff);
-  border: 2px solid #f97316;
-  font-family: Arial, Helvetica, sans-serif;
-  text-align: center;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.10);
-">
-
-  <div style="font-size: 42px; margin-bottom: 8px;">
-    🎟️✨
-  </div>
-
-  <div style="
-    font-size: 18px;
-    color: #7c2d12;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  ">
-    Promoción especial
-  </div>
-
-  <div style="
-    font-size: 30px;
-    line-height: 1.25;
-    color: #111827;
-    font-weight: 800;
-    margin-bottom: 14px;
-  ">
-    Compra <span style="color:#ea580c;">5 boletos o más</span>
-  </div>
-
-  <div style="
-    font-size: 20px;
-    color: #374151;
-    line-height: 1.4;
-    margin-bottom: 18px;
-  ">
-    en una sola exhibición y recibe
-  </div>
-
-  <div style="
-    display: inline-block;
-    padding: 12px 22px;
-    border-radius: 999px;
-    background: #ea580c;
-    color: #ffffff;
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: .5px;
-  ">
-    🎁 1 BOLETO ADICIONAL GRATIS
-  </div>
-
-</div>`;
-}
-
-function cargarEjemploPopupHtml(){
-  const area=document.getElementById('cfg-popup-html');
-  if(area) area.value=popupHtmlEjemplo();
-  const mode=document.getElementById('cfg-popup-mode');
-  if(mode) mode.value='html';
-  actualizarModoPopupAdmin();
-}
-
-function actualizarModoPopupAdmin(){
-  const mode=(document.getElementById('cfg-popup-mode')?.value)||'simple';
-  const simple=document.getElementById('popup-simple-fields');
-  const htmlFields=document.getElementById('popup-html-fields');
-  if(simple) simple.style.display=mode==='html'?'none':'block';
-  if(htmlFields) htmlFields.style.display=mode==='html'?'block':'none';
-}
-
-function mostrarPopupContenido(titulo, mensaje, boton, modo='simple', html=''){
-  const modal=document.getElementById('popup-modal');
-  const wrap=document.getElementById('popup-wrap');
-  const title=document.getElementById('popup-title');
-  const msg=document.getElementById('popup-message');
-  const btn=document.getElementById('popup-btn');
-  const esHtml=modo==='html' && String(html||'').trim();
-  if(wrap) wrap.classList.toggle('popup-html-mode', !!esHtml);
-  if(esHtml){
-    if(msg) msg.innerHTML=html;
-  }else{
-    if(title) title.textContent=titulo||'Aviso importante';
-    if(msg) msg.innerHTML=htmlEscape(mensaje||'Aviso del sorteo').replace(/\n/g,'<br>');
-    if(btn) btn.textContent=boton||'Entendido';
+// ============================================================
+//  MEJORA 4: COMPARTIR POR WHATSAPP
+// ============================================================
+function compartirWA(){
+  const keys=_billeteActualKeys;
+  const nombre=_billeteActualNombre;
+  const subtotal=_billeteActualSubtotal;
+  if(!keys||!keys.length) return;
+  const sorteo=cfg.nombre||'el sorteo';
+  let nums=keys.map(k=>{
+    const b=boletos[k];
+    const todos=[...(b?.nums||[k]),...(b?.numsExtra||[])];
+    return `Boleto ${k}: ${todos.map(n=>pad(n)).join(', ')}`;
+  }).join('\n');
+  let fecha='por definir';
+  if(cfg.fechaSorteo){
+    const d=new Date(cfg.fechaSorteo+'T12:00:00');
+    fecha=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   }
-  if(modal) modal.style.display='flex';
-}
-function mostrarPopup(forzar){
-  if(!forzar && !cfg.popupEnabled) return;
-  let modo=cfg.popupMode||'simple';
-  let titulo=cfg.popupTitle||'Aviso importante';
-  let mensaje=cfg.popupMessage||'Aviso del sorteo';
-  let html=cfg.popupHtml||'';
-  let boton=cfg.popupButton||'Entendido';
-  // Vista previa desde Admin: usa lo que está escrito en los campos aunque aún no se haya guardado.
-  if(forzar && document.getElementById('cfg-popup-title')){
-    modo=document.getElementById('cfg-popup-mode')?.value||modo;
-    titulo=document.getElementById('cfg-popup-title').value.trim()||titulo;
-    mensaje=document.getElementById('cfg-popup-message').value.trim()||mensaje;
-    html=document.getElementById('cfg-popup-html')?.value||html;
-    boton=document.getElementById('cfg-popup-button').value.trim()||boton;
-  }
-  mostrarPopupContenido(titulo,mensaje,boton,modo,html);
-}
-function cerrarPopup(event){
-  if(event && event.target && event.target.id!=='popup-modal') return;
-  cerrarPopupDirecto();
-}
-function cerrarPopupDirecto(){
-  const modal=document.getElementById('popup-modal');
-  if(modal) modal.style.display='none';
+  const texto=`🎟️ ¡Ya participé en *${sorteo}*!\n\n${nums}\n\n📅 Fecha del sorteo: ${fecha}\n${cfg.notaFecha?`📌 ${cfg.notaFecha}\n`:''}\n${subtotal>0?`💰 Total pagado: $${subtotal.toLocaleString('es-MX')} MXN\n`:''}\n¡Consigue tu boleto también! 🏆`;
+  const url='https://wa.me/?text='+encodeURIComponent(texto);
+  window.open(url,'_blank');
 }
 
-function setCompraProcesando(activo, mensaje){
-  compraProcesando=activo;
-  const overlay=document.getElementById('processing-overlay');
-  const title=document.getElementById('processing-title');
-  if(title) title.textContent=mensaje||'Procesando boleto...';
-  if(overlay) overlay.style.display=activo?'flex':'none';
-  const btn=document.getElementById('btn-registrar-boleto');
-  if(btn){
-    btn.disabled=activo;
-    btn.textContent=activo?'⏳ Procesando boleto...':'✓ Registrar boleto';
-  }
+function actualizarBilleteActual(keys, nombre, subtotal){
+  _billeteActualKeys=keys||[];
+  _billeteActualNombre=nombre||'';
+  _billeteActualSubtotal=subtotal||0;
 }
 
-function boletoVacio(){
-  return {estado:'disponible',nombre:'',tel:'',email:'',nums:[],numsExtra:[],fecha:'',pagado:false,comprobante:'',comprobanteNombre:'',gratis:false,promo:'',precioUnitario:0,totalCompra:0,descuentoMonto:0,subtotalCompra:0};
-}
+// ============================================================
+//  PROMO / RESUMEN
+// ============================================================
+function promoActiva(){ return cfg.promoTipo==='descuento'||cfg.promoTipo==='gratis'?cfg.promoTipo:'none'; }
+function promoDescuentoPctActual(){ if(promoActiva()!=='descuento') return 0; const min=Math.max(1,parseInt(cfg.promoDescuentoMin)||1); const pct=Math.min(Math.max(parseFloat(cfg.promoDescuentoPct)||0,0),100); return seleccionados.length>=min?pct:0; }
+function promoGratisRequeridos(){ if(promoActiva()!=='gratis') return 0; const min=Math.max(1,parseInt(cfg.promoGratisMin)||1); const cantidad=Math.max(1,parseInt(cfg.promoGratisCantidad)||1); return seleccionados.length>=min?cantidad:0; }
+function descripcionPromoActual(){ if(promoActiva()==='descuento') return `Compra ${cfg.promoDescuentoMin||1} boleto${(cfg.promoDescuentoMin||1)>1?'s':''} o más y recibe ${cfg.promoDescuentoPct||0}% de descuento.`; if(promoActiva()==='gratis') return `Compra ${cfg.promoGratisMin||1} boleto${(cfg.promoGratisMin||1)>1?'s':''} o más y recibe ${cfg.promoGratisCantidad||1} boleto${(cfg.promoGratisCantidad||1)>1?'s':''} gratis.`; return 'Sin promoción activa.'; }
+function calcularResumenCompra(){ const pagados=seleccionados.length; const gratis=boletosPromoGratis.length; const totalBruto=pagados*(parseFloat(cfg.precio)||0); const descuentoPct=promoDescuentoPctActual(); const descuentoMonto=Math.round((totalBruto*descuentoPct/100)*100)/100; const subtotal=Math.max(0,Math.round((totalBruto-descuentoMonto)*100)/100); let promoAplicada=''; if(promoActiva()==='descuento'&&descuentoPct>0) promoAplicada=`Descuento ${descuentoPct}% por volumen`; if(promoActiva()==='gratis'&&gratis>0) promoAplicada=`${gratis} boleto${gratis>1?'s':''} gratis por paquete`; return {pagados,gratis,totalBoletos:pagados+gratis,totalBruto,descuentoPct,descuentoMonto,subtotal,promoTipo:promoActiva(),promoAplicada,descripcion:descripcionPromoActual(),boletosPagados:[...seleccionados],boletosGratis:[...boletosPromoGratis]}; }
+function obtenerNumerosSeleccionadosActuales(){ const usados=new Set(); for(const sk of seleccionados){ agregarNumerosASet(sk,usados); const d=numerosAsignadosPorBoleto[sk]; if(d){ agregarNumerosASet(d.principal,usados); agregarNumerosASet(d.extra,usados); } } for(const pk of boletosPromoGratis){ agregarNumerosASet(pk,usados); const d=numerosPromoPorBoleto[pk]; if(d){ agregarNumerosASet(d.principal,usados); agregarNumerosASet(d.extra,usados); } } return usados; }
+function generarNumerosDesdeSet(k,usados){ const principal=parseInt(k,10); const principalKey=normalizarNumeroId(principal); if(usados.has(principalKey)) throw new Error(`El número ${pad(principal)} ya fue asignado.`); usados.add(principalKey); if(cfg.extrasReservado>0&&totalPublico()<total()){ const disp=rangoReservadoDisponibles(usados); if(disp.length<cfg.extrasReservado) throw new Error(`No hay suficientes números extras únicos. Disponibles: ${disp.length}, requeridos: ${cfg.extrasReservado}.`); const extras=[...disp].sort(()=>Math.random()-0.5).slice(0,cfg.extrasReservado).sort((a,b)=>a-b); extras.forEach(n=>usados.add(normalizarNumeroId(n))); return {principal:[principal],extra:extras}; } return {principal:[principal],extra:[]}; }
+function limpiarPromoGratis(){ boletosPromoGratis=[]; numerosPromoPorBoleto={}; }
+function actualizarPromoGratis(){ limpiarPromoGratis(); const requeridos=promoGratisRequeridos(); if(requeridos<=0) return; const usados=obtenerNumerosVendidosAsignadosLocal(); for(const sk of seleccionados){ agregarNumerosASet(sk,usados); const d=numerosAsignadosPorBoleto[sk]; if(d){ agregarNumerosASet(d.principal,usados); agregarNumerosASet(d.extra,usados); } } const disponibles=[]; for(let i=0;i<totalPublico();i++){ const k=pad(i); if(bloqueados.has(k)||boletos[k]?.estado==='vendido'||seleccionados.includes(k)||usados.has(normalizarNumeroId(k))) continue; disponibles.push(k); } const mezclados=[...disponibles].sort(()=>Math.random()-0.5); for(const k of mezclados){ if(boletosPromoGratis.length>=requeridos) break; try{ const gen=generarNumerosDesdeSet(k,usados); boletosPromoGratis.push(k); numerosPromoPorBoleto[k]=gen; }catch(e){} } }
+function actualizarResumenPromoAdmin(){ const div=document.getElementById('promo-admin-resumen'); if(!div) return; const tipo=(document.getElementById('cfg-promo-tipo')?.value)||cfg.promoTipo||'none'; const dMin=parseInt(document.getElementById('cfg-promo-desc-min')?.value)||4; const dPct=parseFloat(document.getElementById('cfg-promo-desc-pct')?.value)||10; const gMin=parseInt(document.getElementById('cfg-promo-gratis-min')?.value)||10; const gQty=parseInt(document.getElementById('cfg-promo-gratis-cantidad')?.value)||2; if(tipo==='descuento') div.innerHTML=`Compra ${dMin}+ → ${dPct}% descuento.`; else if(tipo==='gratis') div.innerHTML=`Compra ${gMin}+ → ${gQty} boleto${gQty>1?'s':''} gratis.`; else div.innerHTML='Sin promoción activa.'; }
+function getNums(k){ const d=numerosAsignadosPorBoleto[k]||numerosPromoPorBoleto[k]||{principal:[parseInt(k,10)],extra:[]}; return d.principal||[parseInt(k,10)]; }
+function getExtra(k){ const d=numerosAsignadosPorBoleto[k]||numerosPromoPorBoleto[k]||{extra:[]}; return d.extra||[]; }
 
-// Rango p?blico: cu?ntos boletos se muestran en la grilla al cliente
-function totalPublico(){
-  if(cfg.rangoPublicoMax>0) return Math.min(cfg.rangoPublicoMax, total());
-  return total();
-}
-// Rango reservado: n?meros que se asignan autom?ticamente (no visibles en grilla)
-function rangoReservadoDisponibles(excluir){
-  const inicio = totalPublico();
-  const fin = total();
-  const disponibles = [];
-  for(let i=inicio; i<fin; i++){
-    const k=normalizarNumeroId(i);
-    if(!excluir.has(k)) disponibles.push(i);
-  }
-  return disponibles;
-}
-
-function initBoletos(){
-  // Solo inicializar el rango p?blico en el objeto boletos
-  const tp = totalPublico();
-  for(let i=0;i<tp;i++){
-    const k=pad(i);
-    if(!boletos[k]) boletos[k]=boletoVacio();
-  }
-}
-
-// ==========================================
+// ============================================================
 //  RENDER GRID
-// ==========================================
+// ============================================================
 function renderGrid(){
   const g=document.getElementById('grid-boletos');
   const frag=document.createDocumentFragment();
@@ -1160,121 +977,59 @@ function renderGrid(){
     const b=boletos[k];
     let cls='boleto';
     const esGanador=esNumGanador(b?.nums||[],b?.numsExtra||[]);
-    const usadoComoNumeroAsignado=numerosYaEntregados.has(normalizarNumeroId(k));
+    const usadoComoNumero=numerosYaEntregados.has(normalizarNumeroId(k));
     if(bloqueados.has(k)) cls+=' bloqueado';
-    else if(b?.estado==='vendido') cls+= esGanador?' ganador':' vendido';
-    else if(usadoComoNumeroAsignado) cls+=' bloqueado';
+    else if(b?.estado==='vendido') cls+=esGanador?' ganador':' vendido';
+    else if(usadoComoNumero) cls+=' bloqueado';
     else if(seleccionados.includes(k)||boletosPromoGratis.includes(k)) cls+=' seleccionado';
     const btn=document.createElement('button');
-    btn.className=cls; btn.textContent=k; btn.title=(usadoComoNumeroAsignado && b?.estado!=='vendido')?'Número ya asignado':k;
+    btn.className=cls; btn.textContent=k; btn.title=k;
     btn.onclick=()=>seleccionarBoleto(k);
     frag.appendChild(btn);
   }
   g.innerHTML='';
   g.appendChild(frag);
   actualizarContadorSel();
+  renderProgreso();
 }
 
-function esNumGanador(nums, numsExtra){
-  if(!cfg.ganadores||!cfg.ganadores.length) return false;
-  const todos=[...(nums||[]),...(numsExtra||[])];
-  return todos.some(n=>cfg.ganadores.includes(Number(n)));
-}
-
-function actualizarContadorSel(){
-  const n=seleccionados.length;
-  const lbl=document.getElementById('lbl-count-sel');
-  const btn=document.getElementById('btn-limpiar-sel');
-  if(lbl) lbl.textContent=`${n} / 10`;
-  if(btn) btn.style.display=n>0?'inline-flex':'none';
-}
+function esNumGanador(nums,numsExtra){ if(!cfg.ganadores||!cfg.ganadores.length) return false; return [...(nums||[]),...(numsExtra||[])].some(n=>cfg.ganadores.includes(Number(n))); }
+function actualizarContadorSel(){ const n=seleccionados.length; const lbl=document.getElementById('lbl-count-sel'); const btn=document.getElementById('btn-limpiar-sel'); if(lbl) lbl.textContent=`${n} / 10`; if(btn) btn.style.display=n>0?'inline-flex':'none'; }
 
 function seleccionarBoleto(k){
   if(compraProcesando) return;
-  if(boletosPromoGratis.includes(k)){setAlert('alert-compra',`El boleto ${k} fue asignado gratis por la promoción.`, 'info');return;}
+  if(boletosPromoGratis.includes(k)){setAlert('alert-compra',`El boleto ${k} fue asignado gratis.`,'info');return;}
   if(bloqueados.has(k)||boletos[k]?.estado==='vendido') return;
   const idx=seleccionados.indexOf(k);
-  if(idx>=0){
-    // Deseleccionar
-    seleccionados.splice(idx,1);
-    delete numerosAsignadosPorBoleto[k];
-  } else {
-    if(numeroYaEntregadoLocal(k)){
-      setAlert('alert-compra',`El número ${k} ya fue asignado en otro boleto y no puede repetirse.`,'err');
-      renderGrid();
-      return;
-    }
-    if(seleccionados.length>=10){
-      setAlert('alert-compra','Máximo 10 boletos por compra.','warn');
-      return;
-    }
-    try{
-      const generados=generarNumeros(k);
-      seleccionados.push(k);
-      numerosAsignadosPorBoleto[k]=generados;
-    }catch(e){
-      setAlert('alert-compra',e.message||'No hay suficientes números únicos disponibles.','err');
-      return;
-    }
+  if(idx>=0){ seleccionados.splice(idx,1); delete numerosAsignadosPorBoleto[k]; }
+  else{
+    if(numeroYaEntregadoLocal(k)){setAlert('alert-compra',`El número ${k} ya fue asignado.`,'err');renderGrid();return;}
+    if(seleccionados.length>=10){setAlert('alert-compra','Máximo 10 boletos por compra.','warn');return;}
+    try{ const g=generarNumeros(k); seleccionados.push(k); numerosAsignadosPorBoleto[k]=g; }
+    catch(e){setAlert('alert-compra',e.message||'Error al asignar números.','err');return;}
   }
-  actualizarPromoGratis();
-  renderGrid();
-  actualizarFormCompra();
+  actualizarPromoGratis(); renderGrid(); actualizarFormCompra();
 }
 
-function generarNumeros(k){
-  const usados = obtenerNumerosVendidosAsignadosLocal();
-  const usadosSeleccion = obtenerNumerosSeleccionadosActuales();
-  usadosSeleccion.forEach(n=>usados.add(n));
-  return generarNumerosDesdeSet(k, usados);
-}
+function generarNumeros(k){ const usados=obtenerNumerosVendidosAsignadosLocal(); obtenerNumerosSeleccionadosActuales().forEach(n=>usados.add(n)); return generarNumerosDesdeSet(k,usados); }
 
 function elegirAleatorio(){
   if(compraProcesando) return;
   const cantidad=parseInt(document.getElementById('sel-cantidad-random').value)||1;
   const tp=totalPublico();
   const disponibles=[];
-  for(let i=0;i<tp;i++){
-    const k=pad(i);
-    if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)&&!boletosPromoGratis.includes(k)&&!numeroYaEntregadoLocal(k)) disponibles.push(k);
-  }
+  for(let i=0;i<tp;i++){ const k=pad(i); if(!bloqueados.has(k)&&boletos[k]?.estado!=='vendido'&&!seleccionados.includes(k)&&!boletosPromoGratis.includes(k)&&!numeroYaEntregadoLocal(k)) disponibles.push(k); }
   if(!disponibles.length){alert('No hay boletos disponibles.');return;}
-  const libresNecesarios=Math.min(cantidad, 10-seleccionados.length);
-  if(libresNecesarios<=0){setAlert('alert-compra','Ya tienes 10 boletos seleccionados.','warn');return;}
+  const libres=Math.min(cantidad,10-seleccionados.length);
+  if(libres<=0){setAlert('alert-compra','Ya tienes 10 boletos seleccionados.','warn');return;}
   const mezclados=[...disponibles].sort(()=>Math.random()-0.5);
   let agregados=0;
-  let ultimoError='';
   for(const k of mezclados){
-    if(agregados>=libresNecesarios) break;
-    try{
-      const generados=generarNumeros(k);
-      seleccionados.push(k);
-      numerosAsignadosPorBoleto[k]=generados;
-      agregados++;
-    }catch(e){
-      ultimoError=e.message||String(e);
-    }
+    if(agregados>=libres) break;
+    try{ const g=generarNumeros(k); seleccionados.push(k); numerosAsignadosPorBoleto[k]=g; agregados++; }catch(e){}
   }
-  actualizarPromoGratis();
-  if(agregados===0){
-    setAlert('alert-compra',ultimoError||'No hay suficientes números únicos disponibles.','err');
-    return;
-  }
-  if(agregados<libresNecesarios){
-    setAlert('alert-compra',`Solo se pudieron asignar ${agregados} boleto(s) porque ya no hay suficientes números únicos disponibles.`,'warn');
-  }
-  renderGrid();
-  actualizarFormCompra();
+  actualizarPromoGratis(); renderGrid(); actualizarFormCompra();
   document.querySelector('.boleto.seleccionado')?.scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function getNums(k){
-  const data=numerosAsignadosPorBoleto[k]||numerosPromoPorBoleto[k]||{principal:[parseInt(k,10)],extra:{}};
-  return data.principal||[parseInt(k,10)];
-}
-function getExtra(k){
-  const data=numerosAsignadosPorBoleto[k]||numerosPromoPorBoleto[k]||{extra:[]};
-  return data.extra||[];
 }
 
 function actualizarFormCompra(){
@@ -1282,45 +1037,21 @@ function actualizarFormCompra(){
   if(seleccionados.length===0){fc.style.display='none';return;}
   fc.style.display='block';
   const resumen=calcularResumenCompra();
-  const tieneExtras=cfg.extrasReservado>0 && totalPublico()<total();
+  const tieneExtras=cfg.extrasReservado>0&&totalPublico()<total();
   const renderLinea=(k,gratis=false)=>{
-    const principal=getNums(k);
-    const extra=getExtra(k);
-    const extraHtml=tieneExtras&&extra.length>0
-      ?`<span style="color:var(--teal);font-size:11px"> + extras: ${extra.map(n=>pad(n)).join(', ')}</span>`
-      :'';
+    const principal=getNums(k); const extra=getExtra(k);
+    const extraHtml=tieneExtras&&extra.length?`<span style="color:var(--teal);font-size:11px"> + extras: ${extra.map(n=>pad(n)).join(', ')}</span>`:'';
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--gray-200);font-size:13px">
-      <span>Boleto <strong>${k}</strong> ${gratis?'<span class="badge badge-verde" style="font-size:9px">Gratis promo</span>':''}</span>
-      <span style="color:var(--text-muted);font-size:12px">Núm: ${principal.map(n=>pad(n)).join(', ')}${extraHtml}</span>
-    </div>`;
+      <span>Boleto <strong>${k}</strong> ${gratis?'<span class="badge badge-verde" style="font-size:9px">Gratis</span>':''}</span>
+      <span style="color:var(--text-muted);font-size:12px">Núm: ${principal.map(n=>pad(n)).join(', ')}${extraHtml}</span></div>`;
   };
   let resumenHtml=seleccionados.map(k=>renderLinea(k,false)).join('');
-  if(boletosPromoGratis.length){
-    resumenHtml += `<div style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--teal);margin:8px 0 4px">🎁 Boletos gratis por promoción</div>`;
-    resumenHtml += boletosPromoGratis.map(k=>renderLinea(k,true)).join('');
-  }
-  const promoBox = resumen.promoAplicada
-    ? `<div class="alert alert-ok" style="margin:10px 0 0;font-size:12px">🎁 Promoción aplicada: <strong>${resumen.promoAplicada}</strong></div>`
-    : (promoActiva()!=='none'?`<div class="alert alert-info" style="margin:10px 0 0;font-size:12px">Promoción disponible: ${descripcionPromoActual()}</div>`:'');
-  const descuentoBox = resumen.descuentoMonto>0
-    ? `<div style="display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px;margin-top:10px">
-        <span>Total normal</span><strong>$${resumen.totalBruto.toLocaleString('es-MX')} MXN</strong>
-        <span>Descuento aplicado ${resumen.descuentoPct}%</span><strong style="color:var(--teal)">-$${resumen.descuentoMonto.toLocaleString('es-MX')} MXN</strong>
-        <span style="font-family:var(--font-head);font-weight:800">Subtotal a pagar</span><strong style="color:var(--purple);font-family:var(--font-head)">$${resumen.subtotal.toLocaleString('es-MX')} MXN</strong>
-      </div>`
-    : `<div style="display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px;margin-top:10px">
-        <span style="font-family:var(--font-head);font-weight:800">Total a pagar</span><strong style="color:var(--purple);font-family:var(--font-head)">$${resumen.subtotal.toLocaleString('es-MX')} MXN</strong>
-      </div>`;
-  document.getElementById('numeros-asignados').innerHTML=`
-    <div style="background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
-      <div style="font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--purple-dark);margin-bottom:8px">
-        ${resumen.pagados} boleto${resumen.pagados>1?'s':''} comprado${resumen.pagados>1?'s':''}${resumen.gratis?` + ${resumen.gratis} gratis`:''}
-      </div>
-      ${resumenHtml}
-      ${tieneExtras?`<div style="font-size:11px;color:var(--teal);margin-top:6px">✓ Cada boleto incluye ${cfg.extrasReservado} número${cfg.extrasReservado>1?'s':''} extra del rango reservado</div>`:''}
-      ${promoBox}
-      ${descuentoBox}
-    </div>`;
+  if(boletosPromoGratis.length) resumenHtml+=`<div style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--teal);margin:8px 0 4px">🎁 Boletos gratis por promoción</div>`+boletosPromoGratis.map(k=>renderLinea(k,true)).join('');
+  const promoBox=resumen.promoAplicada?`<div class="alert alert-ok" style="margin:10px 0 0;font-size:12px">🎁 ${resumen.promoAplicada}</div>`:(promoActiva()!=='none'?`<div class="alert alert-info" style="margin:10px 0 0;font-size:12px">${descripcionPromoActual()}</div>`:'');
+  const descuentoBox=resumen.descuentoMonto>0
+    ?`<div style="display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px;margin-top:10px"><span>Total normal</span><strong>$${resumen.totalBruto.toLocaleString('es-MX')} MXN</strong><span>Descuento ${resumen.descuentoPct}%</span><strong style="color:var(--teal)">-$${resumen.descuentoMonto.toLocaleString('es-MX')} MXN</strong><span style="font-family:var(--font-head);font-weight:800">Subtotal a pagar</span><strong style="color:var(--purple);font-family:var(--font-head)">$${resumen.subtotal.toLocaleString('es-MX')} MXN</strong></div>`
+    :`<div style="display:grid;grid-template-columns:1fr auto;gap:6px;font-size:13px;margin-top:10px"><span style="font-family:var(--font-head);font-weight:800">Total a pagar</span><strong style="color:var(--purple);font-family:var(--font-head)">$${resumen.subtotal.toLocaleString('es-MX')} MXN</strong></div>`;
+  document.getElementById('numeros-asignados').innerHTML=`<div style="background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px"><div style="font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--purple-dark);margin-bottom:8px">${resumen.pagados} boleto${resumen.pagados>1?'s':''}${resumen.gratis?` + ${resumen.gratis} gratis`:''}</div>${resumenHtml}${promoBox}${descuentoBox}</div>`;
   document.getElementById('tf-banco').textContent=cfg.banco||'—';
   document.getElementById('tf-clabe').textContent=cfg.clabe||'—';
   document.getElementById('tf-titular').textContent=cfg.titular||'—';
@@ -1332,65 +1063,36 @@ function actualizarFormCompra(){
   if(nota) nota.innerHTML=notaPagoHtml();
 }
 
-function limpiarSeleccion(){
-  if(compraProcesando) return;
-  seleccionados=[];
-  numerosAsignadosPorBoleto={};
-  renderGrid();
-  document.getElementById('form-compra').style.display='none';
-  setAlert('alert-compra','','');
-}
+function limpiarSeleccion(){ if(compraProcesando) return; seleccionados=[]; numerosAsignadosPorBoleto={}; renderGrid(); document.getElementById('form-compra').style.display='none'; setAlert('alert-compra','',''); }
+function cancelarSeleccion(){ limpiarSeleccion(); }
 
-function cancelarSeleccion(){
-  limpiarSeleccion();
-}
-
-// ==========================================
+// ============================================================
 //  PAGO TABS
-// ==========================================
-function selectPagoTab(id, btn){
-  if(id==='mercadopago' && !cfg.mpEnabled) return;
-  if(id==='paypal' && !cfg.ppEnabled) return;
-  document.querySelectorAll('.pago-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.pago-panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('pago-'+id).classList.add('active');
-}
+// ============================================================
+function selectPagoTab(id,btn){ if(id==='mercadopago'&&!cfg.mpEnabled) return; if(id==='paypal'&&!cfg.ppEnabled) return; document.querySelectorAll('.pago-tab').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.pago-panel').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); document.getElementById('pago-'+id).classList.add('active'); }
+function actualizarMetodosPagoVisibles(){ const mpT=document.getElementById('tab-mercadopago'); const ppT=document.getElementById('tab-paypal'); const mpP=document.getElementById('pago-mercadopago'); const ppP=document.getElementById('pago-paypal'); if(mpT) mpT.style.display=cfg.mpEnabled?'inline-flex':'none'; if(ppT) ppT.style.display=cfg.ppEnabled?'inline-flex':'none'; if(mpP) mpP.style.display=cfg.mpEnabled?'':'none'; if(ppP) ppP.style.display=cfg.ppEnabled?'':'none'; }
 
-function actualizarMetodosPagoVisibles(){
-  const mpVisible=!!cfg.mpEnabled;
-  const ppVisible=!!cfg.ppEnabled;
-  const mpTab=document.getElementById('tab-mercadopago');
-  const ppTab=document.getElementById('tab-paypal');
-  const mpPanel=document.getElementById('pago-mercadopago');
-  const ppPanel=document.getElementById('pago-paypal');
-  if(mpTab) mpTab.style.display=mpVisible?'inline-flex':'none';
-  if(ppTab) ppTab.style.display=ppVisible?'inline-flex':'none';
-  if(mpPanel) mpPanel.style.display=mpVisible?'':'none';
-  if(ppPanel) ppPanel.style.display=ppVisible?'':'none';
-  const active=document.querySelector('.pago-panel.active');
-  if(active && active.style.display==='none'){
-    selectPagoTab('transferencia', document.getElementById('tab-transferencia'));
-  }
-}
-
-function registrarPagoMP(){
-  if(!cfg.mpEnabled || !cfg.mpLink){setAlert('alert-compra','Mercado Pago no está habilitado.','err');return false;}
-  if(!validarDatosCompra()) return false;
-}
-function registrarPagoPP(){
-  if(!cfg.ppEnabled || !cfg.ppLink){setAlert('alert-compra','PayPal no está habilitado.','err');return false;}
-  if(!validarDatosCompra()) return false;
-}
-
-// ==========================================
-//  CONFIRMAR COMPRA ? BILLETE
-// ==========================================
+// ============================================================
+//  CONFIRMAR COMPRA — con manejo de error de Sheets lock
+// ============================================================
 function validarDatosCompra(){
   const nombre=document.getElementById('inp-nombre').value.trim();
   const tel=document.getElementById('inp-tel').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
   if(!nombre||!tel){setAlert('alert-compra','Completa nombre y teléfono.','err');return false;}
+  // Validación de email solo si se ingresó algo
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setAlert('alert-compra','El correo electrónico no parece válido.','err');return false;}
   return true;
+}
+
+function setCompraProcesando(activo,mensaje){
+  compraProcesando=activo;
+  const overlay=document.getElementById('processing-overlay');
+  const title=document.getElementById('processing-title');
+  if(title) title.textContent=mensaje||'Procesando boleto...';
+  if(overlay) overlay.style.display=activo?'flex':'none';
+  const btn=document.getElementById('btn-registrar-boleto');
+  if(btn){ btn.disabled=activo; btn.textContent=activo?'⏳ Procesando...':'✓ Registrar boleto'; }
 }
 
 async function confirmarCompra(){
@@ -1403,58 +1105,40 @@ async function confirmarCompra(){
   const resumenCompra=calcularResumenCompra();
   if(!boletosPagados.length){setAlert('alert-compra','Selecciona al menos un boleto.','err');return;}
   const yaNoDisponibles=boletosCopia.filter(k=>bloqueados.has(k)||boletos[k]?.estado==='vendido'||numeroYaEntregadoLocal(k));
-  if(yaNoDisponibles.length){
-    setAlert('alert-compra',`Los números ${yaNoDisponibles.join(', ')} ya no están disponibles. Actualiza tu selección.`,'err');
-    renderGrid();
-    return;
-  }
-  const usadosPrevios=obtenerNumerosVendidosAsignadosLocal();
-  const vistosCompra=new Set();
-  for(const k of boletosCopia){
-    const todos=[...getNums(k),...getExtra(k)];
-    for(const n of todos){
-      const key=normalizarNumeroId(n);
-      if(usadosPrevios.has(key)||vistosCompra.has(key)){
-        setAlert('alert-compra',`El número ${pad(n)} está repetido o ya fue asignado. Limpia la selección y vuelve a intentar.`,'err');
-        renderGrid();
-        return;
-      }
-      vistosCompra.add(key);
-    }
-  }
+  if(yaNoDisponibles.length){setAlert('alert-compra',`Los números ${yaNoDisponibles.join(', ')} ya no están disponibles.`,'err');renderGrid();return;}
   const nombre=document.getElementById('inp-nombre').value.trim();
   const tel=document.getElementById('inp-tel').value.trim();
   const email=document.getElementById('inp-email').value.trim();
   const fecha=new Date().toLocaleString('es-MX');
-  setAlert('alert-compra','⏳ Procesando boleto, por favor no cierres ni recargues esta pantalla...','info');
-  setCompraProcesando(true, boletosCopia.length>1?'Procesando boletos...':'Procesando boleto...');
+  setAlert('alert-compra','⏳ Registrando boleto, por favor espera...','info');
+  setCompraProcesando(true,boletosCopia.length>1?'Procesando boletos...':'Procesando boleto...');
   try{
     for(const k of boletosCopia){
       const esGratis=boletosGratis.includes(k);
       const principal=getNums(k);
       const extra=getExtra(k);
       const todosAsignados=[...principal,...extra];
-      const promocionFila=resumenCompra.promoTipo==='descuento' ? '% Descuento' : (esGratis ? 'Generado por promoción' : 'Normal');
-      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:'',comprobanteNombre:'',gratis:esGratis,promo:resumenCompra.promoAplicada||'',promocionEtiqueta:promocionFila,tipoBoleto:promocionFila,precioUnitario:esGratis?0:cfg.precio,totalCompra:resumenCompra.totalBruto,descuentoMonto:resumenCompra.descuentoMonto,subtotalCompra:resumenCompra.subtotal};
-      await enviarSheets({accion:'venta',boleto:k,nombre,tel,email,
+      const promocionFila=resumenCompra.promoTipo==='descuento'?'% Descuento':(esGratis?'Generado por promoción':'Normal');
+      // Enviar a Sheets — el Apps Script verificará duplicados con LockService
+      // Si devuelve error de duplicado, se lanza excepción y se detiene la compra.
+      const resultado=await enviarSheetsConRespuesta({
+        accion:'venta',boleto:k,nombre,tel,email,
         nums:todosAsignados.map(n=>pad(n)).join(', '),
         numsExtra:extra.map(n=>pad(n)).join(', '),
-        fecha,
-        total:resumenCompra.subtotal,
+        fecha,total:resumenCompra.subtotal,
         precioUnitario:esGratis?0:cfg.precio,
-        tipoBoleto:promocionFila,
-        promocionEtiqueta:promocionFila,
-        promoTipo:resumenCompra.promoTipo,
-        promo:resumenCompra.promoAplicada||'',
-        descuentoPct:resumenCompra.descuentoPct,
-        descuentoMonto:resumenCompra.descuentoMonto,
-        subtotalCompra:resumenCompra.subtotal,
-        totalCompra:resumenCompra.totalBruto,
-        cantidadPagada:resumenCompra.pagados,
-        cantidadGratis:resumenCompra.gratis,
-        estadoPago:'Pendiente de Pago',
-        pagado:false,
-        whatsappPago:cfg.whatsappPago||''});
+        tipoBoleto:promocionFila,promocionEtiqueta:promocionFila,
+        promoTipo:resumenCompra.promoTipo,promo:resumenCompra.promoAplicada||'',
+        descuentoPct:resumenCompra.descuentoPct,descuentoMonto:resumenCompra.descuentoMonto,
+        subtotalCompra:resumenCompra.subtotal,totalCompra:resumenCompra.totalBruto,
+        cantidadPagada:resumenCompra.pagados,cantidadGratis:resumenCompra.gratis,
+        estadoPago:'Pendiente de Pago',pagado:false,whatsappPago:cfg.whatsappPago||''
+      });
+      // Si el Apps Script devolvió ok:false (boleto duplicado en Sheets), abortar
+      if(resultado&&resultado.ok===false){
+        throw new Error(resultado.error||`El boleto ${k} ya fue registrado por otro comprador. Por favor selecciona otro número.`);
+      }
+      boletos[k]={estado:'vendido',nombre,tel,email,nums:principal,numsExtra:extra,fecha,pagado:false,comprobante:'',comprobanteNombre:'',gratis:esGratis,promo:resumenCompra.promoAplicada||'',promocionEtiqueta:promocionFila,precioUnitario:esGratis?0:cfg.precio,totalCompra:resumenCompra.totalBruto,descuentoMonto:resumenCompra.descuentoMonto,subtotalCompra:resumenCompra.subtotal};
     }
     guardarEstado(); renderGrid(); renderStats();
     if(adminLogado) renderAdmin();
@@ -1464,42 +1148,37 @@ async function confirmarCompra(){
     seleccionados=[]; numerosAsignadosPorBoleto={}; limpiarPromoGratis();
     document.getElementById('form-compra').style.display='none';
     setAlert('alert-compra','','');
-    mostrarBilleteMultiple(boletosCopia, nombre, tel, email, fecha, resumenCompra);
+    mostrarBilleteMultiple(boletosCopia,nombre,tel,email,fecha,resumenCompra);
     setTimeout(()=>cargarDesdeSheets({silencioso:true}),1800);
   }catch(e){
     console.error(e);
-    setAlert('alert-compra','No se pudo completar el registro. Revisa tu conexión e intenta de nuevo.','err');
+    setAlert('alert-compra',e.message||'No se pudo completar el registro. Revisa tu conexión e intenta de nuevo.','err');
   }finally{
     setCompraProcesando(false);
   }
 }
 
-// Billete para compra de m?ltiples boletos (se muestra al confirmar)
-function mostrarBilleteMultiple(keys, nombre, tel, email, fecha, resumenCompra){
-  const esGan=keys.some(k=>esNumGanador(boletos[k]?.nums||[], boletos[k]?.numsExtra||[]));
-  const totalPagar=resumenCompra?resumenCompra.subtotal:keys.length*cfg.precio;
-  const tieneExtras=cfg.extrasReservado>0 && totalPublico()<total();
+// ============================================================
+//  BILLETE MODAL
+// ============================================================
+function mostrarBilleteMultiple(keys,nombre,tel,email,fecha,resumenCompra){
+  actualizarBilleteActual(keys,nombre,resumenCompra?.subtotal||0);
+  const esGan=keys.some(k=>esNumGanador(boletos[k]?.nums||[],boletos[k]?.numsExtra||[]));
+  const tieneExtras=cfg.extrasReservado>0&&totalPublico()<total();
   document.getElementById('blt-sorteo-nombre').textContent=(cfg.nombre||'SORTEO').toUpperCase();
-  document.getElementById('blt-header-sub').textContent=resumenCompra?`${resumenCompra.pagados} comprado${resumenCompra.pagados>1?'s':''}${resumenCompra.gratis?` + ${resumenCompra.gratis} gratis`:''} — Comprobante de participación`:`${keys.length} boleto${keys.length>1?'s':''} — Comprobante de participación`;
+  document.getElementById('blt-header-sub').textContent=resumenCompra?`${resumenCompra.pagados} comprado${resumenCompra.pagados>1?'s':''}${resumenCompra.gratis?` + ${resumenCompra.gratis} gratis`:''} — Comprobante`:`${keys.length} boleto${keys.length>1?'s':''}`;
   document.getElementById('blt-num-grande').textContent=keys.length===1?keys[0]:`×${keys.length}`;
   const numsDiv=document.getElementById('blt-nums');
   numsDiv.innerHTML=keys.map(k=>{
-    const nums=boletos[k]?.nums||[];
-    const extra=boletos[k]?.numsExtra||[];
+    const nums=boletos[k]?.nums||[];const extra=boletos[k]?.numsExtra||[];
     const numsHtml=nums.map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}">${pad(n)}</div>`;}).join('');
-    const extraHtml=extra.map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}" style="background:#E1F5EE;color:#085041" title="Extra">${pad(n)}</div>`;}).join('');
-    return `<div style="width:100%;padding:4px 0;border-bottom:1px dashed var(--gray-200)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span style="font-family:var(--font-head);font-weight:700;font-size:12px">Boleto ${k}</span>
-        ${tieneExtras&&extra.length?`<span style="font-size:10px;color:var(--teal)">+${extra.length} extras</span>`:''}
-      </div>
-      <div style="display:flex;gap:3px;flex-wrap:wrap">${numsHtml}${extraHtml}</div>
-    </div>`;
+    const extraHtml=extra.map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}" style="background:#E1F5EE;color:#085041">${pad(n)}</div>`;}).join('');
+    return `<div style="width:100%;padding:4px 0;border-bottom:1px dashed var(--gray-200)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-family:var(--font-head);font-weight:700;font-size:12px">Boleto ${k}</span>${tieneExtras&&extra.length?`<span style="font-size:10px;color:var(--teal)">+${extra.length} extras</span>`:''}</div><div style="display:flex;gap:3px;flex-wrap:wrap">${numsHtml}${extraHtml}</div></div>`;
   }).join('');
   document.getElementById('blt-nombre').textContent=nombre;
   document.getElementById('blt-total').innerHTML=resumenCompra
-    ? `<div style="text-align:right"><div>Total normal: $${resumenCompra.totalBruto.toLocaleString('es-MX')} MXN</div>${resumenCompra.descuentoMonto>0?`<div style="color:var(--teal)">Descuento ${resumenCompra.descuentoPct}%: -$${resumenCompra.descuentoMonto.toLocaleString('es-MX')} MXN</div>`:''}${resumenCompra.gratis?`<div style="color:var(--teal)">Promoción: ${resumenCompra.gratis} boleto${resumenCompra.gratis>1?'s':''} gratis</div>`:''}<strong>Subtotal: $${resumenCompra.subtotal.toLocaleString('es-MX')} MXN</strong></div>`
-    : `$${totalPagar.toLocaleString('es-MX')} MXN${keys.length>1?` (${keys.length} × $${cfg.precio.toLocaleString('es-MX')})`:''}`;
+    ?`<div style="text-align:right"><div>Total: $${resumenCompra.totalBruto.toLocaleString('es-MX')} MXN</div>${resumenCompra.descuentoMonto>0?`<div style="color:var(--teal)">Descuento: -$${resumenCompra.descuentoMonto.toLocaleString('es-MX')} MXN</div>`:''}${resumenCompra.gratis?`<div style="color:var(--teal)">${resumenCompra.gratis} boleto${resumenCompra.gratis>1?'s':''} gratis</div>`:''}<strong>Subtotal: $${resumenCompra.subtotal.toLocaleString('es-MX')} MXN</strong></div>`
+    :`$${(keys.length*cfg.precio).toLocaleString('es-MX')} MXN`;
   document.getElementById('blt-fecha').textContent=fecha;
   let fs='Por definir';
   if(cfg.fechaSorteo){const d=new Date(cfg.fechaSorteo+'T12:00:00');fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
@@ -1507,120 +1186,81 @@ function mostrarBilleteMultiple(keys, nombre, tel, email, fecha, resumenCompra){
   document.getElementById('blt-status-pago').innerHTML='<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
   document.getElementById('blt-instrucciones-pago').innerHTML=notaPagoHtml();
   const ganDiv=document.getElementById('blt-status-ganador');
-  if(cfg.ganadores&&cfg.ganadores.length>0){
-    ganDiv.innerHTML=esGan?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>':'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Estos boletos no resultaron ganadores</div>';
-  } else ganDiv.innerHTML='';
+  if(cfg.ganadores&&cfg.ganadores.length>0) ganDiv.innerHTML=esGan?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>':'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Estos boletos no resultaron ganadores</div>';
+  else ganDiv.innerHTML='';
   document.getElementById('blt-comprobante-wrap').style.display='none';
-  document.getElementById('billete-modal').style.display='flex';
+  // Prevenir cierre accidental en móvil: deshabilitar overlay 2s
+  const modal=document.getElementById('billete-modal');
+  modal.style.display='flex';
+  modal.classList.add('no-close-yet');
+  setTimeout(()=>modal.classList.remove('no-close-yet'),2000);
 }
 
-// ==========================================
-//  BILLETE MODAL (buscar un boleto individual)
-// ==========================================
 function mostrarBillete(k){
   const b=boletos[k];
   if(!b||b.estado!=='vendido'){setAlert('alert-buscar','Boleto no registrado o no vendido.','err');return;}
-  const esGan=esNumGanador(b.nums||[], b.numsExtra||[]);
+  actualizarBilleteActual([k],b.nombre,b.subtotalCompra||cfg.precio);
+  const esGan=esNumGanador(b.nums||[],b.numsExtra||[]);
   const tieneExtras=(b.numsExtra||[]).length>0;
   document.getElementById('blt-sorteo-nombre').textContent=(cfg.nombre||'SORTEO').toUpperCase();
   document.getElementById('blt-header-sub').textContent='Comprobante de participación';
   document.getElementById('blt-num-grande').textContent=k;
   const numsDiv=document.getElementById('blt-nums');
   const numsHtml=(b.nums||[]).map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}">${pad(n)}</div>`;}).join('');
-  const extraHtml=(b.numsExtra||[]).map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}" style="background:#E1F5EE;color:#085041" title="Número extra">${pad(n)}</div>`;}).join('');
-  numsDiv.innerHTML=`<div style="width:100%">
-    <div style="display:flex;gap:4px;flex-wrap:wrap">${numsHtml}</div>
-    ${tieneExtras?`<div style="margin-top:6px"><span style="font-size:10px;color:var(--teal);font-weight:700;font-family:var(--font-head)">EXTRAS:</span><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${extraHtml}</div></div>`:''}
-  </div>`;
+  const extraHtml=(b.numsExtra||[]).map(n=>{const esG=cfg.ganadores&&cfg.ganadores.includes(Number(n));return `<div class="billete-num${esG?' ganador-num':''}" style="background:#E1F5EE;color:#085041">${pad(n)}</div>`;}).join('');
+  numsDiv.innerHTML=`<div style="width:100%"><div style="display:flex;gap:4px;flex-wrap:wrap">${numsHtml}</div>${tieneExtras?`<div style="margin-top:6px"><span style="font-size:10px;color:var(--teal);font-weight:700">EXTRAS:</span><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${extraHtml}</div></div>`:''}</div>`;
   document.getElementById('blt-nombre').textContent=b.nombre;
   document.getElementById('blt-total').textContent=`$${cfg.precio.toLocaleString('es-MX')} MXN`;
   document.getElementById('blt-fecha').textContent=b.fecha;
   let fs='Por definir';
   if(cfg.fechaSorteo){const d=new Date(cfg.fechaSorteo+'T12:00:00');fs=d.toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}
   document.getElementById('blt-fecha-sorteo').innerHTML=`${fs}<br><span style="font-size:11px;font-weight:400;color:var(--text-muted)">${cfg.notaFecha||''}</span>`;
-  document.getElementById('blt-status-pago').innerHTML=b.pagado
-    ?'<div class="billete-status-pagado">✅ Pago confirmado</div>'
-    :'<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
+  document.getElementById('blt-status-pago').innerHTML=b.pagado?'<div class="billete-status-pagado">✅ Pago confirmado</div>':'<div class="billete-status-pendiente">⏳ Pago pendiente de confirmación</div>';
   document.getElementById('blt-instrucciones-pago').innerHTML=b.pagado?'':notaPagoHtml();
   const ganDiv=document.getElementById('blt-status-ganador');
-  if(cfg.ganadores&&cfg.ganadores.length>0){
-    ganDiv.innerHTML=esGan
-      ?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>'
-      :'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Este boleto no resultó ganador</div>';
-  } else ganDiv.innerHTML='';
+  if(cfg.ganadores&&cfg.ganadores.length>0) ganDiv.innerHTML=esGan?'<div class="billete-status-ganador">🏆 ¡BOLETO GANADOR!</div>':'<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">Este boleto no resultó ganador</div>';
+  else ganDiv.innerHTML='';
   const cw=document.getElementById('blt-comprobante-wrap');
-  const ci=document.getElementById('blt-comprobante-img');
-  if(b.comprobante){cw.style.display='block';ci.src=b.comprobante;}
+  if(b.comprobante){cw.style.display='block';document.getElementById('blt-comprobante-img').src=b.comprobante;}
   else cw.style.display='none';
-  document.getElementById('billete-modal').style.display='flex';
+  const modal=document.getElementById('billete-modal');
+  modal.style.display='flex';
+  modal.classList.add('no-close-yet');
+  setTimeout(()=>modal.classList.remove('no-close-yet'),2000);
 }
 
-function cerrarBillete(e){
-  if(e.target.id==='billete-modal') cerrarBilleteDirecto();
-}
-function cerrarBilleteDirecto(){
-  document.getElementById('billete-modal').style.display='none';
-}
+function cerrarBillete(e){ if(e.target.id==='billete-modal') cerrarBilleteDirecto(); }
+function cerrarBilleteDirecto(){ document.getElementById('billete-modal').style.display='none'; }
 function imprimirBillete(){
   const inner=document.getElementById('billete-inner').innerHTML;
   const w=window.open('','_blank','width=500,height=700');
-  w.document.write(`<!DOCTYPE html><html><head><title>Billete</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-    <style>body{font-family:'DM Sans',sans-serif;margin:0;padding:20px;background:#fff}
-    *{box-sizing:border-box}
-    .billete-header{background:linear-gradient(135deg,#534AB7,#3C3489);color:#fff;padding:20px 24px 16px;text-align:center;border-radius:16px 16px 0 0}
-    .billete-header-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
-    .billete-numero-grande{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;line-height:1;margin:12px 0 4px}
-    .billete-body{padding:20px 24px;border:1px solid #D3D1C7;border-top:none}
-    .billete-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #D3D1C7;font-size:13px}
-    .billete-row:last-child{border-bottom:none}
-    .billete-row-label{color:#666;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em}
-    .billete-row-val{font-family:'Syne',sans-serif;font-weight:700;text-align:right}
-    .billete-nums{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}
-    .billete-num{width:32px;height:32px;border-radius:8px;background:#EEEDFE;color:#3C3489;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-    .billete-footer{padding:14px 24px 20px;text-align:center;border:1px solid #D3D1C7;border-top:1px dashed #D3D1C7;border-radius:0 0 16px 16px}
-    .billete-status-pagado{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5;border-radius:10px;padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:inline-block}
-    .billete-status-pendiente{background:#FAEEDA;color:#633806;border:1px solid #FAC775;border-radius:10px;padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:inline-block}
-    .billete-close{display:none}
-    .billete-actions{display:none}
-    img{max-width:100%;border-radius:8px}
-    </style></head><body>${inner}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><title>Billete</title><link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><style>body{font-family:'DM Sans',sans-serif;margin:0;padding:20px;background:#fff}*{box-sizing:border-box}.billete-header{background:linear-gradient(135deg,#534AB7,#3C3489);color:#fff;padding:20px 24px 16px;text-align:center;border-radius:16px 16px 0 0}.billete-header-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}.billete-numero-grande{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;line-height:1;margin:12px 0 4px}.billete-body{padding:20px 24px;border:1px solid #D3D1C7;border-top:none}.billete-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #D3D1C7;font-size:13px}.billete-row:last-child{border-bottom:none}.billete-row-label{color:#666;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em}.billete-row-val{font-family:'Syne',sans-serif;font-weight:700;text-align:right}.billete-nums{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}.billete-num{width:32px;height:32px;border-radius:8px;background:#EEEDFE;color:#3C3489;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}.billete-footer{padding:14px 24px 20px;text-align:center;border:1px solid #D3D1C7;border-top:1px dashed #D3D1C7;border-radius:0 0 16px 16px}.billete-status-pendiente{background:#FAEEDA;color:#633806;border:1px solid #FAC775;border-radius:10px;padding:8px 16px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:inline-block}.billete-close,.billete-actions{display:none}img{max-width:100%;border-radius:8px}</style></head><body>${inner}</body></html>`);
   w.document.close();
   setTimeout(()=>w.print(),600);
 }
 
-// ==========================================
+// ============================================================
 //  BUSCAR BOLETO
-// ==========================================
+// ============================================================
 function buscarBoleto(){
   const val=document.getElementById('inp-buscar').value.trim();
   if(!val){setAlert('alert-buscar','Ingresa un número.','err');return;}
-  // Buscar por n?mero de boleto
   const k=val.padStart(cfg.digitos,'0');
-  if(boletos[k]&&boletos[k].estado==='vendido'){
-    mostrarBillete(k);
-    setAlert('alert-buscar','','');
-    return;
-  }
-  // Buscar por n?mero del sorteo asignado
+  if(boletos[k]&&boletos[k].estado==='vendido'){mostrarBillete(k);setAlert('alert-buscar','','');return;}
   const num=parseInt(val,10);
   const encontrado=Object.entries(boletos).find(([,b])=>b.estado==='vendido'&&((b.nums||[]).includes(num)||(b.numsExtra||[]).includes(num)));
-  if(encontrado){
-    mostrarBillete(encontrado[0]);
-    setAlert('alert-buscar','','');
-    return;
-  }
+  if(encontrado){mostrarBillete(encontrado[0]);setAlert('alert-buscar','','');return;}
   setAlert('alert-buscar','No se encontró ningún boleto con ese número.','err');
 }
 
-// ==========================================
+// ============================================================
 //  STATS
-// ==========================================
+// ============================================================
 function renderStats(){
   const tot=totalPublico();
   const vend=Object.values(boletos).filter(b=>b.estado==='vendido').length;
   const libres=tot-vend-bloqueados.size;
-  const tieneReservado=cfg.rangoPublicoMax>0 && totalPublico()<total();
+  const tieneReservado=cfg.rangoPublicoMax>0&&totalPublico()<total();
   document.getElementById('stats-publico').innerHTML=`
     <div class="stat"><div class="stat-label">Disponibles</div><div class="stat-val">${libres.toLocaleString('es-MX')}</div></div>
     <div class="stat"><div class="stat-label">Vendidos</div><div class="stat-val">${vend.toLocaleString('es-MX')}</div></div>
@@ -1635,122 +1275,59 @@ function renderStats(){
       <div class="stat"><div class="stat-label">Pendientes</div><div class="stat-val" style="color:var(--amber)">${vend-pag}</div></div>
       <div class="stat"><div class="stat-label">Recaudado</div><div class="stat-val">$${(pag*cfg.precio).toLocaleString('es-MX')}</div></div>
       <div class="stat"><div class="stat-label">Bloqueados</div><div class="stat-val">${bloqueados.size}</div></div>
-      ${tieneReservado?`<div class="stat"><div class="stat-label">Cobertura total</div><div class="stat-val" style="font-size:16px">${Math.round(vend*(1+cfg.extrasReservado)/total()*100)}%</div></div>`:''}
     `;
   }
+  renderProgreso();
 }
 
-
-// ==========================================
+// ============================================================
 //  RESULTADO PÚBLICO
-// ==========================================
-function obtenerBoletosGanadores(){
-  const gan=[];
-  if(!cfg.ganadores||!cfg.ganadores.length) return gan;
-  for(const [k,b] of Object.entries(boletos)){
-    if(b && b.estado==='vendido' && esNumGanador(b.nums||[], b.numsExtra||[])){
-      gan.push(k);
-    }
-  }
-  return gan.sort();
-}
-function renderResultadoPublico(){
-  const div=document.getElementById('resultado-publico');
-  if(!div) return;
-  if(!cfg.ganadores||!cfg.ganadores.length){
-    div.style.display='none';
-    div.innerHTML='';
-    return;
-  }
-  const nums=cfg.ganadores.map(n=>`<span class="resultado-num">${pad(n)}</span>`).join('');
-  const boletosGanadores=obtenerBoletosGanadores();
-  const boletosHtml=boletosGanadores.length
-    ? `<div class="resultado-publico-boletos"><strong>Boleto${boletosGanadores.length>1?'s':''} con número ganador:</strong> ${boletosGanadores.join(', ')}</div>`
-    : `<div class="resultado-publico-boletos">El resultado está publicado. Busca tu boleto en la sección <strong>Mi boleto</strong> para revisar si participa con un número ganador.</div>`;
-  div.innerHTML=`
-    <div class="resultado-publico-title">🏆 Resultado del sorteo publicado</div>
-    <div class="resultado-publico-sub">Número${cfg.ganadores.length>1?'s':''} ganador${cfg.ganadores.length>1?'es':''}:</div>
-    <div class="resultado-publico-nums">${nums}</div>
-    ${boletosHtml}
-  `;
-  div.style.display='block';
-}
-function mostrarPopupGanadores(){
-  if(!cfg.ganadores||!cfg.ganadores.length) return;
-  const nums=cfg.ganadores.map(n=>pad(n)).join(', ');
-  const boletosGanadores=obtenerBoletosGanadores();
-  const extra=boletosGanadores.length ? `\nBoleto${boletosGanadores.length>1?'s':''} ganador${boletosGanadores.length>1?'es':''}: ${boletosGanadores.join(', ')}` : '';
-  mostrarPopupContenido('🏆 Resultado del sorteo', `Número${cfg.ganadores.length>1?'s':''} ganador${cfg.ganadores.length>1?'es':''}: ${nums}${extra}`, 'Entendido');
-}
+// ============================================================
+function obtenerBoletosGanadores(){ const gan=[]; if(!cfg.ganadores||!cfg.ganadores.length) return gan; for(const [k,b] of Object.entries(boletos)){ if(b&&b.estado==='vendido'&&esNumGanador(b.nums||[],b.numsExtra||[])) gan.push(k); } return gan.sort(); }
+function renderResultadoPublico(){ const div=document.getElementById('resultado-publico'); if(!div) return; if(!cfg.ganadores||!cfg.ganadores.length){div.style.display='none';div.innerHTML='';return;} const nums=cfg.ganadores.map(n=>`<span class="resultado-num">${pad(n)}</span>`).join(''); const bg=obtenerBoletosGanadores(); const bgHtml=bg.length?`<div class="resultado-publico-boletos"><strong>Boleto${bg.length>1?'s':''} ganador${bg.length>1?'es':''}:</strong> ${bg.join(', ')}</div>`:`<div class="resultado-publico-boletos">Busca tu boleto en <strong>Mi boleto</strong> para verificar si ganaste.</div>`; div.innerHTML=`<div class="resultado-publico-title">🏆 Resultado del sorteo publicado</div><div class="resultado-publico-sub">Número${cfg.ganadores.length>1?'s':''} ganador${cfg.ganadores.length>1?'es':''}:</div><div class="resultado-publico-nums">${nums}</div>${bgHtml}`; div.style.display='block'; }
 
-// ==========================================
+// ============================================================
+//  POP UP
+// ============================================================
+function mostrarPopupContenido(titulo,mensaje,boton,modo,html){ const modal=document.getElementById('popup-modal'); const wrap=document.getElementById('popup-wrap'); const title=document.getElementById('popup-title'); const msg=document.getElementById('popup-message'); const btn=document.getElementById('popup-btn'); const esHtml=modo==='html'&&String(html||'').trim(); if(wrap) wrap.classList.toggle('popup-html-mode',!!esHtml); if(esHtml){if(msg) msg.innerHTML=html;}else{if(title) title.textContent=titulo||'Aviso'; if(msg) msg.innerHTML=htmlEscape(mensaje||'').replace(/\n/g,'<br>'); if(btn) btn.textContent=boton||'Entendido';} if(modal) modal.style.display='flex'; }
+function mostrarPopup(forzar){ if(!forzar&&!cfg.popupEnabled) return; let modo=cfg.popupMode||'simple',titulo=cfg.popupTitle,mensaje=cfg.popupMessage,html=cfg.popupHtml,boton=cfg.popupButton; if(forzar&&document.getElementById('cfg-popup-title')){ modo=document.getElementById('cfg-popup-mode')?.value||modo; titulo=document.getElementById('cfg-popup-title').value.trim()||titulo; mensaje=document.getElementById('cfg-popup-message').value.trim()||mensaje; html=document.getElementById('cfg-popup-html')?.value||html; boton=document.getElementById('cfg-popup-button').value.trim()||boton; } mostrarPopupContenido(titulo,mensaje,boton,modo,html); }
+function cerrarPopup(event){ if(event&&event.target&&event.target.id!=='popup-modal') return; cerrarPopupDirecto(); }
+function cerrarPopupDirecto(){ const modal=document.getElementById('popup-modal'); if(modal) modal.style.display='none'; }
+function actualizarModoPopupAdmin(){ const mode=(document.getElementById('cfg-popup-mode')?.value)||'simple'; const simple=document.getElementById('popup-simple-fields'); const htmlFields=document.getElementById('popup-html-fields'); if(simple) simple.style.display=mode==='html'?'none':'block'; if(htmlFields) htmlFields.style.display=mode==='html'?'block':'none'; }
+function popupHtmlEjemplo(){ return `<div style="max-width:520px;margin:20px auto;padding:22px 26px;border-radius:18px;background:linear-gradient(135deg,#fff7ed,#ffffff);border:2px solid #f97316;font-family:Arial,sans-serif;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.10)"><div style="font-size:42px;margin-bottom:8px">🎟️✨</div><div style="font-size:18px;color:#7c2d12;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Promoción especial</div><div style="font-size:30px;line-height:1.25;color:#111827;font-weight:800;margin-bottom:14px">Compra <span style="color:#ea580c">5 boletos o más</span></div><div style="font-size:20px;color:#374151;margin-bottom:18px">en una sola exhibición y recibe</div><div style="display:inline-block;padding:12px 22px;border-radius:999px;background:#ea580c;color:#fff;font-size:24px;font-weight:900">🎁 1 BOLETO ADICIONAL GRATIS</div></div>`; }
+function cargarEjemploPopupHtml(){ const area=document.getElementById('cfg-popup-html'); if(area) area.value=popupHtmlEjemplo(); const mode=document.getElementById('cfg-popup-mode'); if(mode) mode.value='html'; actualizarModoPopupAdmin(); }
+
+// ============================================================
 //  ADMIN RENDER
-// ==========================================
-
-function promocionEtiquetaBoleto(b){
-  const etiqueta=String(b?.promocionEtiqueta||b?.tipoBoleto||'').trim();
-  if(etiqueta) return etiqueta;
-  const promoTxt=String(b?.promo||'').toLowerCase();
-  if(b?.gratis) return 'Generado por promoción';
-  if(promoTxt.includes('descuento') || Number(b?.descuentoMonto||0)>0) return '% Descuento';
-  return 'Normal';
-}
-function badgePromocionBoleto(b){
-  const etiqueta=promocionEtiquetaBoleto(b);
-  if(etiqueta==='% Descuento') return '<span class="badge badge-amarillo" style="font-size:9px">% Descuento</span>';
-  if(etiqueta==='Generado por promoción') return '<span class="badge badge-verde" style="font-size:9px">Generado por promoción</span>';
-  return '<span class="badge badge-gris" style="font-size:9px">Normal</span>';
-}
-
-function numerosCompletosBoleto(b){
-  const nums=[...(b?.nums||[]),...(b?.numsExtra||[])];
-  const vistos=new Set();
-  return nums
-    .map(n=>String(n).padStart(cfg.digitos,'0'))
-    .filter(n=>{
-      const clave=String(parseInt(n,10));
-      if(vistos.has(clave)) return false;
-      vistos.add(clave);
-      return true;
-    })
-    .join(', ');
-}
+// ============================================================
+function promocionEtiquetaBoleto(b){ const e=String(b?.promocionEtiqueta||b?.tipoBoleto||'').trim(); if(e) return e; if(b?.gratis) return 'Generado por promoción'; if(Number(b?.descuentoMonto||0)>0) return '% Descuento'; return 'Normal'; }
+function badgePromocionBoleto(b){ const e=promocionEtiquetaBoleto(b); if(e==='% Descuento') return '<span class="badge badge-amarillo" style="font-size:9px">% Descuento</span>'; if(e==='Generado por promoción') return '<span class="badge badge-verde" style="font-size:9px">Promo</span>'; return '<span class="badge badge-gris" style="font-size:9px">Normal</span>'; }
+function numerosCompletosBoleto(b){ const nums=[...(b?.nums||[]),...(b?.numsExtra||[])]; const vistos=new Set(); return nums.map(n=>String(n).padStart(cfg.digitos,'0')).filter(n=>{const c=String(parseInt(n,10));if(vistos.has(c)) return false;vistos.add(c);return true;}).join(', '); }
 
 function renderAdmin(){
   renderStats();
   const vendidos=Object.entries(boletos).filter(([,b])=>b.estado==='vendido');
   document.getElementById('tbody-vendidos').innerHTML=vendidos.length===0
     ?'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Sin ventas aún</td></tr>'
-    :vendidos.map(([k,b])=>`
-      <tr>
+    :vendidos.map(([k,b])=>`<tr>
         <td><strong>${k}</strong></td>
         <td>${badgePromocionBoleto(b)}</td>
         <td><span class="badge badge-morado" style="font-size:10px">${numerosCompletosBoleto(b)}</span></td>
         <td>${b.nombre}<br><span style="font-size:11px;color:var(--text-muted)">${b.tel}</span></td>
-        <td>
-          <label class="toggle-pago" style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px">
-            <input type="checkbox" ${b.pagado?'checked':''} onchange="togglePago('${k}',this.checked)" style="width:auto;padding:0">
-            <span>${b.pagado?'<span class="badge badge-verde">Pagado</span>':'<span class="badge badge-amarillo">Pendiente</span>'}</span>
-          </label>
-        </td>
-        <td>${b.comprobante?'<span class="badge badge-verde">Imagen cargada</span>':'<span class="badge badge-gris">Sin imagen</span>'}</td>
+        <td><label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" ${b.pagado?'checked':''} onchange="togglePago('${k}',this.checked)" style="width:auto;padding:0"><span>${b.pagado?'<span class="badge badge-verde">Pagado</span>':'<span class="badge badge-amarillo">Pendiente</span>'}</span></label></td>
+        <td>${b.comprobante?'<span class="badge badge-verde">Cargado</span>':'<span class="badge badge-gris">Sin imagen</span>'}</td>
         <td>${esNumGanador(b.nums||[],b.numsExtra||[])?'<span class="badge badge-dorado">🏆 Ganador</span>':'<span class="badge badge-gris">—</span>'}</td>
-        <td>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <button class="btn btn-secondary btn-sm" onclick="mostrarBillete('${k}')">🎟 Ver</button>
-            <label class="btn btn-secondary btn-sm" style="cursor:pointer;margin:0">
-              📎 <input type="file" accept="image/*" style="display:none" onchange="subirComprobante('${k}',this)">
-            </label>
-            <button class="btn btn-danger btn-sm" onclick="eliminarVenta('${k}')">Liberar</button>
-          </div>
-        </td>
+        <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="mostrarBillete('${k}')">🎟 Ver</button>
+          <label class="btn btn-secondary btn-sm" style="cursor:pointer;margin:0">📎 <input type="file" accept="image/*" style="display:none" onchange="subirComprobante('${k}',this)"></label>
+          <button class="btn btn-danger btn-sm" onclick="eliminarVenta('${k}')">Liberar</button>
+        </div></td>
       </tr>`).join('');
   document.getElementById('count-bloqueados').textContent=bloqueados.size;
-  document.getElementById('lista-bloqueados').innerHTML=[...bloqueados].map(k=>
-    `<span class="badge badge-gris">${k} <span style="cursor:pointer;margin-left:3px" onclick="desbloquearEspecifico('${k}')">×</span></span>`
-  ).join('');
+  document.getElementById('lista-bloqueados').innerHTML=[...bloqueados].map(k=>`<span class="badge badge-gris">${k} <span style="cursor:pointer;margin-left:3px" onclick="desbloquearEspecifico('${k}')">×</span></span>`).join('');
   loadConfigUI();
   renderGanadoresList();
+  renderPremiosAdmin();
 }
 
 function loadConfigUI(){
@@ -1769,7 +1346,6 @@ function loadConfigUI(){
   document.getElementById('cfg-promo-desc-pct').value=cfg.promoDescuentoPct||10;
   document.getElementById('cfg-promo-gratis-min').value=cfg.promoGratisMin||10;
   document.getElementById('cfg-promo-gratis-cantidad').value=cfg.promoGratisCantidad||2;
-  actualizarResumenPromoAdmin();
   document.getElementById('cfg-sheets-url').value=cfg.sheetsUrl;
   document.getElementById('cfg-banco').value=cfg.banco||'';
   document.getElementById('cfg-clabe').value=cfg.clabe||'';
@@ -1788,67 +1364,33 @@ function loadConfigUI(){
   document.getElementById('cfg-popup-html').value=cfg.popupHtml||'';
   document.getElementById('cfg-popup-button').value=cfg.popupButton||'Entendido';
   actualizarModoPopupAdmin();
-  if(cfg.ganadores&&cfg.ganadores.length)
-    document.getElementById('cfg-ganadores').value=cfg.ganadores.join(', ');
+  if(cfg.ganadores&&cfg.ganadores.length) document.getElementById('cfg-ganadores').value=cfg.ganadores.join(', ');
 }
 
-// ==========================================
-//  COMPROBANTE
-// ==========================================
-function subirComprobante(k, input){
-  const file=input.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    boletos[k].comprobante=e.target.result;
-    boletos[k].comprobanteNombre=file.name;
-    boletos[k].pagado=true;
-    guardarEstado();renderAdmin();
-    enviarSheets({accion:'comprobante',boleto:k,pagado:true,estadoPago:'Pagado',comprobante:e.target.result,comprobanteNombre:file.name,comprobanteTipo:file.type,fecha:new Date().toLocaleString('es-MX')});
-  };
-  reader.readAsDataURL(file);
-}
+function actualizarCabecera(){ const logoBox=document.getElementById('topbar-logo-box'); const logoImg=document.getElementById('topbar-logo-img'); const w=Math.min(Math.max(parseInt(cfg.logoWidth)||160,24),220); const h=Math.min(Math.max(parseInt(cfg.logoHeight)||50,24),80); if(logoBox&&logoImg){ if(cfg.logoUrl){logoImg.src=cfg.logoUrl;logoBox.style.display='flex';logoBox.style.width=w+'px';logoBox.style.height=h+'px';}else{logoImg.removeAttribute('src');logoBox.style.display='none';} } const nombre=document.getElementById('sorteo-nombre'); const sub=document.getElementById('sorteo-sub'); const fecha=document.getElementById('sorteo-fecha-line'); if(nombre) nombre.textContent=cfg.nombre||'Sorteo'; const n=numerosMostradosPorBoleto(); if(sub) sub.textContent=`$${(cfg.precio||0).toLocaleString('es-MX')} por boleto · ${n} número${n>1?'s':''} por boleto`; if(fecha) fecha.textContent=fechaSorteoTextoCorto(); document.title=(cfg.nombre||'Sorteo')+' — Sorteo'; iniciarContador(); }
+function actualizarPreviewLogoAdmin(){ const prev=document.getElementById('logo-admin-preview'); if(!prev) return; if(cfg.logoUrl) prev.innerHTML=`<img src="${cfg.logoUrl}" alt="Preview">`; else prev.textContent='Sin logo'; }
+function subirLogoAdmin(input){ const file=input.files&&input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{cfg.logoUrl=e.target.result; const urlInput=document.getElementById('cfg-logo-url'); if(urlInput) urlInput.value=cfg.logoUrl; actualizarCabecera(); actualizarPreviewLogoAdmin(); setAlert('alert-cfg','Logo cargado. Guarda ajustes para conservarlo.','info');}; reader.readAsDataURL(file); }
+function quitarLogoAdmin(){ cfg.logoUrl=''; const u=document.getElementById('cfg-logo-url'); const f=document.getElementById('cfg-logo-file'); if(u) u.value=''; if(f) f.value=''; actualizarCabecera(); actualizarPreviewLogoAdmin(); }
 
-function togglePago(k, val){
-  boletos[k].pagado=val;
-  guardarEstado();renderAdmin();
-  enviarSheets({accion:'pago',boleto:k,pagado:val,estadoPago:val?'Pagado':'Pendiente de Pago',fecha:new Date().toLocaleString('es-MX')});
-}
+// ============================================================
+//  COMPROBANTE / TOGGLE PAGO / GANADORES
+// ============================================================
+function subirComprobante(k,input){ const file=input.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=e=>{boletos[k].comprobante=e.target.result;boletos[k].comprobanteNombre=file.name;boletos[k].pagado=true;guardarEstado();renderAdmin();enviarSheets({accion:'comprobante',boleto:k,pagado:true,estadoPago:'Pagado',comprobante:e.target.result,comprobanteNombre:file.name,comprobanteTipo:file.type,fecha:new Date().toLocaleString('es-MX')});}; reader.readAsDataURL(file); }
+function togglePago(k,val){ boletos[k].pagado=val; guardarEstado();renderAdmin();enviarSheets({accion:'pago',boleto:k,pagado:val,estadoPago:val?'Pagado':'Pendiente de Pago',fecha:new Date().toLocaleString('es-MX')}); }
+function guardarGanadores(){ const raw=document.getElementById('cfg-ganadores').value.trim(); if(!raw){setAlert('alert-ganadores','Ingresa al menos un número ganador.','err');return;} const vistos=new Set(); cfg.ganadores=raw.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>{if(isNaN(n)||vistos.has(n)) return false;vistos.add(n);return true;}); guardarEstado();renderGrid();renderStats();renderResultadoPublico();if(adminLogado) renderAdmin();setAlert('alert-ganadores',`✅ ${cfg.ganadores.length} número(s) publicados.`,'ok');enviarSheets({accion:'resultado',ganadores:cfg.ganadores.map(n=>pad(n)).join(', '),fecha:new Date().toLocaleString('es-MX')}); }
+function renderGanadoresList(){ const div=document.getElementById('ganadores-lista'); if(!cfg.ganadores||!cfg.ganadores.length){div.innerHTML='';return;} div.innerHTML=cfg.ganadores.map(n=>`<div class="gan-num">${String(n).padStart(cfg.digitos,'0')}</div>`).join(''); }
 
-// ==========================================
-//  GANADORES
-// ==========================================
-function guardarGanadores(){
-  const raw=document.getElementById('cfg-ganadores').value.trim();
-  if(!raw){setAlert('alert-ganadores','Ingresa al menos un número ganador.','err');return;}
-  const vistos=new Set();
-  cfg.ganadores=raw.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>{
-    if(isNaN(n)||vistos.has(n)) return false;
-    vistos.add(n);
-    return true;
-  });
-  guardarEstado();
-  renderGrid();
-  renderStats();
-  renderResultadoPublico();
-  if(adminLogado) renderAdmin();
-  setAlert('alert-ganadores',`✅ ${cfg.ganadores.length} número(s) ganador(es) publicados. Ya se muestran en la página pública.`,'ok');
-  mostrarPopupGanadores();
-  enviarSheets({accion:'resultado',ganadores:cfg.ganadores.map(n=>pad(n)).join(', '),fecha:new Date().toLocaleString('es-MX')});
-}
-
-function renderGanadoresList(){
-  const div=document.getElementById('ganadores-lista');
-  if(!cfg.ganadores||!cfg.ganadores.length){div.innerHTML='';return;}
-  div.innerHTML=cfg.ganadores.map(n=>`<div class="gan-num">${String(n).padStart(cfg.digitos,'0')}</div>`).join('');
-}
-
-// ==========================================
+// ============================================================
 //  CONFIG
-// ==========================================
-function guardarConfig(){
-  const nuevaPass=document.getElementById('cfg-pass-nueva').value.trim();
-  if(nuevaPass) PASS_ADMIN=nuevaPass;
+// ============================================================
+async function guardarConfig(){
+  const nuevaPassRaw=document.getElementById('cfg-pass-nueva').value.trim();
+  if(nuevaPassRaw){
+    PASS_ADMIN_HASH=await hashPass(nuevaPassRaw);
+    localStorage.setItem('s_pass_hash',PASS_ADMIN_HASH);
+    localStorage.removeItem('s_pass');
+    document.getElementById('cfg-pass-nueva').value='';
+  }
   const nuevoDigitos=parseInt(document.getElementById('cfg-digitos').value);
   const cambio=nuevoDigitos!==cfg.digitos;
   cfg.nombre=document.getElementById('cfg-nombre').value||'Sorteo';
@@ -1866,7 +1408,7 @@ function guardarConfig(){
   cfg.promoGratisMin=Math.max(1,parseInt(document.getElementById('cfg-promo-gratis-min').value)||10);
   cfg.promoGratisCantidad=Math.max(1,parseInt(document.getElementById('cfg-promo-gratis-cantidad').value)||2);
   cfg.sheetsUrl=document.getElementById('cfg-sheets-url').value.trim();
-  if(SHEETS_URL_FIJA) cfg.sheetsUrl = SHEETS_URL_FIJA;
+  if(SHEETS_URL_FIJA) cfg.sheetsUrl=SHEETS_URL_FIJA;
   cfg.banco=document.getElementById('cfg-banco').value.trim();
   cfg.clabe=document.getElementById('cfg-clabe').value.trim();
   cfg.titular=document.getElementById('cfg-titular').value.trim();
@@ -1884,300 +1426,305 @@ function guardarConfig(){
   cfg.popupHtml=document.getElementById('cfg-popup-html').value.trim();
   cfg.popupButton=document.getElementById('cfg-popup-button').value.trim()||'Entendido';
   if(cambio){boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();}
-  else { actualizarPromoGratis(); }
-  initBoletos();
-  actualizarCabecera();
-  guardarEstado();renderGrid();renderStats();renderResultadoPublico();renderAdmin();actualizarMetodosPagoVisibles();actualizarResumenPromoAdmin();
+  // premios se conservan tal cual — no dependen del rango de boletos
+  if(!cfg.premios) cfg.premios=[];
+  initBoletos(); actualizarCabecera(); guardarEstado(); renderGrid(); renderStats(); renderResultadoPublico(); renderAdmin(); actualizarMetodosPagoVisibles(); actualizarResumenPromoAdmin();
   enviarSheets({accion:'config',config:{...cfg},fecha:new Date().toLocaleString('es-MX')});
   setTimeout(()=>cargarDesdeSheets({silencioso:true}),1200);
-  setAlert('alert-cfg',cambio?'✅ Guardado. Boletos reiniciados y configuración enviada a Sheets.':'✅ Configuración guardada y enviada a Sheets.','ok');
+  setAlert('alert-cfg',cambio?'✅ Guardado. Boletos reiniciados.':'✅ Configuración guardada.','ok');
   if(cfg.popupEnabled) setTimeout(()=>mostrarPopup(false),250);
 }
 
-async function probarSheets(){
-  if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;}
-  setAlert('alert-cfg','⏳ Probando conexión con Apps Script v12...','info');
-  await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')});
-  setAlert('alert-cfg','✅ Envío realizado. Ahora intentando leer estado centralizado desde Sheets...','ok');
-  setTimeout(()=>cargarDesdeSheets({silencioso:false}),900);
-}
+// ============================================================
+//  BLOQUEOS / LIMPIEZA
+// ============================================================
+function bloquearBoleto(){ const n=document.getElementById('inp-bloqueo-num').value.trim().padStart(cfg.digitos,'0'); if(!boletos[n]){setAlert('alert-bloqueo','Número no existe.','err');return;} if(boletos[n].estado==='vendido'){setAlert('alert-bloqueo','Ese boleto ya está vendido.','err');return;} bloqueados.add(n);guardarEstado();renderGrid();renderAdmin();setAlert('alert-bloqueo',`Boleto ${n} bloqueado.`,'ok');enviarSheets({accion:'bloqueo',boleto:n,fecha:new Date().toLocaleString('es-MX')}); }
+function desbloquearBoleto(){ const n=document.getElementById('inp-bloqueo-num').value.trim().padStart(cfg.digitos,'0'); if(!bloqueados.has(n)){setAlert('alert-bloqueo','Ese boleto no está bloqueado.','err');return;} bloqueados.delete(n);guardarEstado();renderGrid();renderAdmin();setAlert('alert-bloqueo',`Boleto ${n} restaurado.`,'ok');enviarSheets({accion:'desbloqueo',boleto:n,fecha:new Date().toLocaleString('es-MX')}); }
+function desbloquearEspecifico(k){ bloqueados.delete(k);guardarEstado();renderGrid();renderAdmin();enviarSheets({accion:'desbloqueo',boleto:k,fecha:new Date().toLocaleString('es-MX')}); }
+function eliminarVenta(k){ if(!confirm(`¿Liberar el boleto ${k}?`)) return; boletos[k]=boletoVacio();guardarEstado();renderGrid();renderStats();renderAdmin();enviarSheets({accion:'cancelacion',boleto:k,fecha:new Date().toLocaleString('es-MX')});setAlert('alert-mantenimiento',`✅ Boleto ${k} liberado.`,'ok'); }
+function liberarPendientes(){ const p=Object.entries(boletos).filter(([,b])=>b.estado==='vendido'&&!b.pagado); if(!p.length){setAlert('alert-mantenimiento','No hay pendientes.','info');return;} if(!confirm(`¿Liberar ${p.length} boleto(s) pendiente(s)?`)) return; p.forEach(([k])=>{boletos[k]=boletoVacio();}); guardarEstado();renderGrid();renderStats();renderAdmin();enviarSheets({accion:'liberar_pendientes',fecha:new Date().toLocaleString('es-MX'),cantidad:p.length});setAlert('alert-mantenimiento',`✅ Se liberaron ${p.length} boleto(s).`,'ok'); }
+function reestablecerBoletosACero(){ const v=Object.values(boletos).filter(b=>b.estado==='vendido').length; const b=bloqueados.size; if(!v&&!b&&(!cfg.ganadores||!cfg.ganadores.length)){setAlert('alert-mantenimiento','El sorteo ya está en ceros.','info');return;} if(!confirm(`Liberar ${v} vendido(s) y ${b} bloqueado(s). ¿Continuar?`)) return; if(prompt('Para confirmar escribe REINICIAR')!=='REINICIAR'){setAlert('alert-mantenimiento','Cancelado.','warn');return;} boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();cfg.ganadores=[];initBoletos();guardarEstado();renderGrid();renderStats();renderAdmin();enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')});setAlert('alert-mantenimiento','✅ Reestablecido a ceros.','ok'); }
 
-function abrirPruebaPing(){
-  const u=(cfg.sheetsUrl||'').trim();
-  if(!u){setAlert('alert-cfg','Primero pega la URL de Aplicación web.','err');return;}
-  const ping=u+(u.includes('?')?'&':'?')+'accion=ping';
-  window.open(ping,'_blank');
-  setAlert('alert-cfg','Abrí la prueba Ping en otra pestaña. Debe mostrar JSON con ok:true y version:v12.','info');
-}
-
-function reiniciarTodo(){
-  if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración? Esto no se puede deshacer.')) return;
-  const urlAntes=cfg.sheetsUrl;
-  if(urlAntes){enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX'),motivo:'Reinicio total con configuración'});}
-  boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];
-  localStorage.clear();
-  initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();
-  setAlert('alert-cfg','Todo reiniciado.','warn');
-}
-
-// ==========================================
-//  BLOQUEOS
-// ==========================================
-function bloquearBoleto(){
-  const n=document.getElementById('inp-bloqueo-num').value.trim().padStart(cfg.digitos,'0');
-  if(!boletos[n]){setAlert('alert-bloqueo','Número no existe.','err');return;}
-  if(boletos[n].estado==='vendido'){setAlert('alert-bloqueo','Ese boleto ya está vendido.','err');return;}
-  bloqueados.add(n);guardarEstado();renderGrid();renderAdmin();
-  setAlert('alert-bloqueo',`Boleto ${n} bloqueado.`,'ok');
-  enviarSheets({accion:'bloqueo',boleto:n,fecha:new Date().toLocaleString('es-MX')});
-}
-function desbloquearBoleto(){
-  const n=document.getElementById('inp-bloqueo-num').value.trim().padStart(cfg.digitos,'0');
-  if(!bloqueados.has(n)){setAlert('alert-bloqueo','Ese boleto no está bloqueado.','err');return;}
-  bloqueados.delete(n);guardarEstado();renderGrid();renderAdmin();
-  setAlert('alert-bloqueo',`Boleto ${n} restaurado.`,'ok');
-  enviarSheets({accion:'desbloqueo',boleto:n,fecha:new Date().toLocaleString('es-MX')});
-}
-function desbloquearEspecifico(k){bloqueados.delete(k);guardarEstado();renderGrid();renderAdmin();enviarSheets({accion:'desbloqueo',boleto:k,fecha:new Date().toLocaleString('es-MX')});}
-
-function eliminarVenta(k){
-  if(!confirm(`¿Liberar el boleto ${k}? Sus números principales y extras volverán a estar disponibles.`)) return;
-  boletos[k]=boletoVacio();
-  guardarEstado();renderGrid();renderStats();renderAdmin();
-  enviarSheets({accion:'cancelacion',boleto:k,fecha:new Date().toLocaleString('es-MX'),motivo:'Liberado por administrador'});
-  setAlert('alert-mantenimiento',`✅ Boleto ${k} liberado. Sus números vuelven a estar disponibles.`,'ok');
-}
-
-function liberarPendientes(){
-  const pendientes=Object.entries(boletos).filter(([,b])=>b.estado==='vendido'&&!b.pagado);
-  if(!pendientes.length){setAlert('alert-mantenimiento','No hay boletos pendientes de pago para liberar.','info');return;}
-  if(!confirm(`¿Liberar ${pendientes.length} boleto(s) pendiente(s) de pago? Sus números principales y extras volverán a estar disponibles.`)) return;
-  pendientes.forEach(([k])=>{
-    boletos[k]=boletoVacio();
-  });
-  guardarEstado();renderGrid();renderStats();renderAdmin();
-  enviarSheets({accion:'liberar_pendientes',fecha:new Date().toLocaleString('es-MX'),cantidad:pendientes.length});
-  setAlert('alert-mantenimiento',`✅ Se liberaron ${pendientes.length} boleto(s) pendiente(s).`,'ok');
-}
-
-function reestablecerBoletosACero(){
-  const vendidos=Object.values(boletos).filter(b=>b.estado==='vendido').length;
-  const bloqueadosCount=bloqueados.size;
-  if(!vendidos&&!bloqueadosCount&&(!cfg.ganadores||!cfg.ganadores.length)){
-    setAlert('alert-mantenimiento','El sorteo ya está en ceros.','info');
-    return;
-  }
-  const msg=`Esta acción liberará TODOS los boletos y números asignados (${vendidos} vendido/reservado, ${bloqueadosCount} bloqueado/s) y borrará resultados publicados. La configuración del sorteo se conservará.`;
-  if(!confirm(msg)) return;
-  const confirmText=prompt('Para confirmar escribe REINICIAR');
-  if(confirmText!=='REINICIAR'){setAlert('alert-mantenimiento','Acción cancelada.','warn');return;}
-
-  boletos={};
-  bloqueados=new Set();
-  seleccionados=[];
-  numerosAsignadosPorBoleto={};
-  limpiarPromoGratis();
-  cfg.ganadores=[];
-  initBoletos();
-  guardarEstado();renderGrid();renderStats();renderAdmin();actualizarMetodosPagoVisibles();
-  enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX'),motivo:'Reestablecer boletos a ceros para nuevo sorteo'});
-  setAlert('alert-mantenimiento','✅ Boletos reestablecidos a ceros. La configuración se conservó.','ok');
-}
-
-
-// ==========================================
-//  ESTADO CENTRAL DESDE GOOGLE SHEETS (v9)
-// ==========================================
-function sheetsUrlConParams(params){
-  const base=(cfg.sheetsUrl||'').trim();
-  if(!base) return '';
-  const sep=base.includes('?')?'&':'?';
-  const query=new URLSearchParams(params).toString();
-  return base+sep+query;
-}
-
-function cargarJsonp(url, timeoutMs=12000){
-  return new Promise((resolve,reject)=>{
-    const cb='__sorteoState_'+Date.now()+'_'+Math.floor(Math.random()*100000);
-    const timer=setTimeout(()=>{
-      cleanup();
-      reject(new Error('Timeout cargando estado desde Sheets'));
-    },timeoutMs);
-    function cleanup(){
-      clearTimeout(timer);
-      try{delete window[cb];}catch(e){window[cb]=undefined;}
-      if(script&&script.parentNode) script.parentNode.removeChild(script);
-    }
-    window[cb]=(data)=>{cleanup();resolve(data);};
-    const script=document.createElement('script');
-    script.src=url+(url.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb)+'&_t='+Date.now();
-    script.onerror=()=>{cleanup();reject(new Error('No se pudo cargar Apps Script'));};
-    document.body.appendChild(script);
-  });
-}
-
-function coercionarConfigCentral(config){
-  const out={...(config||{})};
-  ['precio','digitos','numsPorBoleto','logoWidth','logoHeight','promoDescuentoMin','promoDescuentoPct','promoGratisMin','promoGratisCantidad','rangoPublicoMax','extrasReservado'].forEach(k=>{
-    if(out[k]!==undefined&&out[k]!==null&&out[k]!=='') out[k]=Number(out[k])||0;
-  });
-  ['mpEnabled','ppEnabled','popupEnabled'].forEach(k=>{
-    const v=out[k];
-    out[k]=(v===true||String(v).toLowerCase()==='true'||String(v).toLowerCase()==='sí'||String(v).toLowerCase()==='si'||String(v)==='1');
-  });
-  return out;
-}
-
-function aplicarEstadoCentral(data){
-  if(!data||data.ok===false) throw new Error(data?.error||'Respuesta inválida de Sheets');
-  const urlActual=cfg.sheetsUrl;
-  const cfgCentral=coercionarConfigCentral(data.config||{});
-  cfg={...cfg,...cfgCentral};
-  cfg.sheetsUrl = SHEETS_URL_FIJA || cfg.sheetsUrl || urlActual;
-  boletos={};
-  bloqueados=new Set();
-  seleccionados=[];
-  numerosAsignadosPorBoleto={};
-  limpiarPromoGratis();
-  initBoletos();
-  (data.ventas||[]).forEach(v=>{
-    const k=String(v.boleto||'').padStart(cfg.digitos,'0');
-    if(!k) return;
-    boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',tipoBoleto:v.tipoBoleto||v.promocionEtiqueta||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};
-  });
-  (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0')));
-  cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n));
-  guardarEstado();
-  actualizarCabecera();
-  actualizarMetodosPagoVisibles();
-  renderGrid();
-  renderStats();
-  renderResultadoPublico();
-  if(adminLogado) renderAdmin();
-  if(adminLogado){
-    const el=document.getElementById('sheets-status');
-    if(el) el.innerHTML=`<div class="alert alert-ok">✅ Datos cargados desde Google Sheets: ${data.timestamp||new Date().toLocaleTimeString('es-MX')}</div>`;
-  }
-}
-
-async function cargarDesdeSheets(opts={}){
-  if(!cfg.sheetsUrl){
-    if(adminLogado&&!opts.silencioso) setAlert('alert-cfg','Configura primero la URL de Google Apps Script.','warn');
-    return false;
-  }
-  try{
-    if(adminLogado&&!opts.silencioso){
-      setAlert('alert-cfg','⏳ Cargando datos centralizados desde Google Sheets...','info');
-      const el=document.getElementById('sheets-status');
-      if(el) el.innerHTML='<div class="alert alert-info">⏳ Cargando datos centralizados desde Google Sheets...</div>';
-    }
-    const url=sheetsUrlConParams({accion:'state'});
-    const data=await cargarJsonp(url);
-    aplicarEstadoCentral(data);
-    if(adminLogado&&!opts.silencioso){
-      const ventas=(data.ventas||[]).length;
-      const bloqueos=(data.bloqueados||[]).length;
-      setAlert('alert-cfg',`✅ Datos cargados desde Sheets. Ventas activas: ${ventas}. Bloqueados: ${bloqueos}.`,'ok');
-    }
-    return true;
-  }catch(e){
-    console.error(e);
-    if(adminLogado){
-      const msg=`❌ No se pudieron cargar datos desde Sheets. ${e.message||''}. URL usada: ${cfg.sheetsUrl||'sin URL'}. Revisa que Apps Script esté publicado como Web App, acceso Cualquier usuario y que Ping responda ok:true.`;
-      setAlert('alert-cfg',msg,'err');
-      const el=document.getElementById('sheets-status');
-      if(el) el.innerHTML=`<div class="alert alert-err">${msg}</div>`;
-    }
-    return false;
-  }
-}
-
-// ==========================================
-//  SHEETS
-// ==========================================
+// ============================================================
+//  SHEETS — envío estándar (sin esperar respuesta)
+// ============================================================
 async function enviarSheets(data){
   if(!cfg.sheetsUrl) return;
   try{
     await fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',body:JSON.stringify(data),headers:{'Content-Type':'application/json'}});
-    if(adminLogado) document.getElementById('sheets-status').innerHTML=
-      `<div class="alert alert-ok">✅ Último envío: ${new Date().toLocaleTimeString('es-MX')} — ${data.accion}</div>`;
+    if(adminLogado){ const el=document.getElementById('sheets-status'); if(el) el.innerHTML=`<div class="alert alert-ok">✅ Último envío: ${new Date().toLocaleTimeString('es-MX')} — ${data.accion}</div>`; }
   }catch(e){
-    if(adminLogado) document.getElementById('sheets-status').innerHTML=
-      `<div class="alert alert-err">❌ Error al conectar con Sheets.</div>`;
+    if(adminLogado){ const el=document.getElementById('sheets-status'); if(el) el.innerHTML=`<div class="alert alert-err">❌ Error al conectar con Sheets.</div>`; }
   }
 }
 
-// ==========================================
-//  EXPORT CSV
-// ==========================================
-function exportarCSV(){
-  const vend=Object.entries(boletos).filter(([,b])=>b.estado==='vendido');
-  if(!vend.length) return;
-  const rows=[['Boleto','Tipo','Números','Números extra','Nombre','Teléfono','Correo','Fecha','Pagado','Comprobante','Ganador','Promoción','Subtotal compra']];
-  vend.forEach(([k,b])=>rows.push([
-    k,b.gratis?'Gratis promo':'Compra',(b.nums||[]).join(' | '),(b.numsExtra||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',b.comprobante?'Sí':'No',
-    esNumGanador(b.nums||[],b.numsExtra||[])?'Sí':'No',b.promo||'',b.subtotalCompra||''
-  ]));
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  a.download=`sorteo_${cfg.nombre.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+// ============================================================
+//  MEJORA 4 (lock): Envío a Sheets con lectura de respuesta
+//  Usa JSONP porque Apps Script con no-cors no devuelve body.
+//  Si Sheets detecta duplicado, lanza error que el cliente captura.
+// ============================================================
+function enviarSheetsConRespuesta(data){
+  return new Promise((resolve)=>{
+    if(!cfg.sheetsUrl){ resolve({ok:true}); return; }
+    const cb='__sorteoPost_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+    const timer=setTimeout(()=>{
+      try{delete window[cb];}catch(e){window[cb]=undefined;}
+      if(script&&script.parentNode) script.parentNode.removeChild(script);
+      // Timeout: asumimos OK para no bloquear al comprador si Sheets tarda.
+      // El LockService de Apps Script igual protege contra duplicados reales.
+      resolve({ok:true,_timeout:true});
+    },12000);
+    window[cb]=(resp)=>{
+      clearTimeout(timer);
+      try{delete window[cb];}catch(e){window[cb]=undefined;}
+      if(script&&script.parentNode) script.parentNode.removeChild(script);
+      resolve(resp||{ok:true});
+    };
+    // Codificar el payload como parámetro GET para JSONP
+    const payload=encodeURIComponent(JSON.stringify(data));
+    const url=cfg.sheetsUrl+(cfg.sheetsUrl.includes('?')?'&':'?')+`accion=ventaJsonp&data=${payload}&callback=${encodeURIComponent(cb)}&_t=${Date.now()}`;
+    const script=document.createElement('script');
+    script.src=url;
+    script.onerror=()=>{
+      clearTimeout(timer);
+      try{delete window[cb];}catch(e){}
+      if(script.parentNode) script.parentNode.removeChild(script);
+      resolve({ok:true,_err:'script_error'});
+    };
+    document.body.appendChild(script);
+  });
 }
 
-// ==========================================
+// ============================================================
+//  ESTADO CENTRAL DESDE GOOGLE SHEETS
+// ============================================================
+function sheetsUrlConParams(params){ const base=(cfg.sheetsUrl||'').trim(); if(!base) return ''; const sep=base.includes('?')?'&':'?'; return base+sep+new URLSearchParams(params).toString(); }
+function cargarJsonp(url,timeoutMs=12000){ return new Promise((resolve,reject)=>{ const cb='__sorteoState_'+Date.now()+'_'+Math.floor(Math.random()*100000); const timer=setTimeout(()=>{cleanup();reject(new Error('Timeout'));},timeoutMs); function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}if(script&&script.parentNode) script.parentNode.removeChild(script);} window[cb]=(data)=>{cleanup();resolve(data);}; const script=document.createElement('script'); script.src=url+(url.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb)+'&_t='+Date.now(); script.onerror=()=>{cleanup();reject(new Error('Error cargando Apps Script'));}; document.body.appendChild(script); }); }
+function coercionarConfigCentral(config){ const out={...(config||{})}; ['precio','digitos','numsPorBoleto','logoWidth','logoHeight','promoDescuentoMin','promoDescuentoPct','promoGratisMin','promoGratisCantidad','rangoPublicoMax','extrasReservado'].forEach(k=>{if(out[k]!==undefined&&out[k]!==null&&out[k]!=='') out[k]=Number(out[k])||0;}); ['mpEnabled','ppEnabled','popupEnabled'].forEach(k=>{const v=out[k];out[k]=(v===true||String(v).toLowerCase()==='true'||String(v).toLowerCase()==='sí'||String(v).toLowerCase()==='si'||String(v)==='1');}); return out; }
+function aplicarEstadoCentral(data){ if(!data||data.ok===false) throw new Error(data?.error||'Respuesta inválida'); const urlActual=cfg.sheetsUrl; const cfgCentral=coercionarConfigCentral(data.config||{}); cfg={...cfg,...cfgCentral}; cfg.sheetsUrl=SHEETS_URL_FIJA||cfg.sheetsUrl||urlActual; boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();initBoletos(); (data.ventas||[]).forEach(v=>{const k=String(v.boleto||'').padStart(cfg.digitos,'0');if(!k) return;boletos[k]={...boletoVacio(),estado:'vendido',nombre:v.nombre||'',tel:v.tel||'',email:v.email||'',nums:Array.isArray(v.nums)?v.nums:[parseInt(k,10)],numsExtra:Array.isArray(v.numsExtra)?v.numsExtra:[],fecha:v.fecha||'',pagado:!!v.pagado,comprobante:v.comprobante||'',comprobanteNombre:v.comprobanteNombre||'',gratis:!!v.gratis,promo:v.promo||'',promocionEtiqueta:v.promocionEtiqueta||v.tipoBoleto||'',precioUnitario:Number(v.precioUnitario)||0,totalCompra:Number(v.totalCompra)||0,descuentoMonto:Number(v.descuentoMonto)||0,subtotalCompra:Number(v.subtotalCompra)||0};}); (data.bloqueados||[]).forEach(k=>bloqueados.add(String(k).padStart(cfg.digitos,'0'))); cfg.ganadores=(data.ganadores||[]).map(n=>Number(n)).filter(n=>!isNaN(n)); guardarEstado();actualizarCabecera();actualizarMetodosPagoVisibles();renderGrid();renderStats();renderResultadoPublico();if(adminLogado) renderAdmin(); if(adminLogado){const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-ok">✅ Datos cargados: ${data.timestamp||new Date().toLocaleTimeString('es-MX')}</div>`;} }
+async function cargarDesdeSheets(opts={}){ if(!cfg.sheetsUrl){if(adminLogado&&!opts.silencioso) setAlert('alert-cfg','Configura primero la URL.','warn');return false;} try{ if(adminLogado&&!opts.silencioso){setAlert('alert-cfg','⏳ Cargando desde Sheets...','info');const el=document.getElementById('sheets-status');if(el) el.innerHTML='<div class="alert alert-info">⏳ Cargando...</div>';} const url=sheetsUrlConParams({accion:'state'}); const data=await cargarJsonp(url); aplicarEstadoCentral(data); if(adminLogado&&!opts.silencioso) setAlert('alert-cfg',`✅ Cargado. Ventas: ${(data.ventas||[]).length}.`,'ok'); return true; }catch(e){ console.error(e); if(adminLogado){const msg=`❌ No se pudo cargar desde Sheets. ${e.message||''}`;setAlert('alert-cfg',msg,'err');const el=document.getElementById('sheets-status');if(el) el.innerHTML=`<div class="alert alert-err">${msg}</div>`;} return false; } }
+
+async function probarSheets(){ if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;} setAlert('alert-cfg','⏳ Probando...','info'); await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')}); setAlert('alert-cfg','✅ Prueba enviada. Cargando estado...','ok'); setTimeout(()=>cargarDesdeSheets({silencioso:false}),900); }
+function abrirPruebaPing(){ const u=(cfg.sheetsUrl||'').trim(); if(!u){setAlert('alert-cfg','Primero pega la URL.','err');return;} window.open(u+(u.includes('?')?'&':'?')+'accion=ping','_blank'); setAlert('alert-cfg','Ping abierto en otra pestaña.','info'); }
+function reiniciarTodo(){ if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración?')) return; const url=cfg.sheetsUrl; if(url) enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')}); boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];localStorage.clear();initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();setAlert('alert-cfg','Todo reiniciado.','warn'); }
+
+// ============================================================
+//  CSV
+// ============================================================
+function exportarCSV(){ const vend=Object.entries(boletos).filter(([,b])=>b.estado==='vendido'); if(!vend.length) return; const rows=[['Boleto','Tipo','Números','Extras','Nombre','Teléfono','Correo','Fecha','Pagado','Comprobante','Ganador','Promoción','Subtotal']]; vend.forEach(([k,b])=>rows.push([k,b.gratis?'Gratis':'Compra',(b.nums||[]).join(' | '),(b.numsExtra||[]).join(' | '),b.nombre,b.tel,b.email||'',b.fecha,b.pagado?'Sí':'No',b.comprobante?'Sí':'No',esNumGanador(b.nums||[],b.numsExtra||[])?'Sí':'No',b.promo||'',b.subtotalCompra||''])); const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'})); a.download=`sorteo_${cfg.nombre.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
+
+// ============================================================
+//  PREMIOS — lógica completa v11
+// ============================================================
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+function normalizarUrlDrive(url){
+  const s=String(url||'').trim();
+  const m=s.match(/\/d\/([a-zA-Z0-9_-]{10,})/)||s.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if(m) return 'https://drive.google.com/uc?export=view&id='+m[1];
+  return s;
+}
+
+function badgeClasePremio(idx){ if(idx===0) return 'premio-badge-1'; if(idx===1) return 'premio-badge-2'; return 'premio-badge-n'; }
+
+function premioVacio(){ return {id:uid(),etiqueta:'1er Lugar',titulo:'',valor:'',descripcionModo:'simple',descripcion:'',fotos:[],autoplay:true,autoplayVel:4,visible:true,ctaTexto:'🎟 Quiero participar'}; }
+
+function crearCarrusel(premio,idPremio){
+  const fotos=(premio.fotos||[]).map(f=>({...f,url:normalizarUrlDrive(f.url)}));
+  if(!fotos.length) return `<div class="carrusel-placeholder"><span style="font-size:28px">🖼️</span><span>Sin fotos</span></div>`;
+  const slides=fotos.map((f,i)=>`<div class="carrusel-slide"><img src="${htmlEscape(f.url)}" alt="${htmlEscape(f.caption||'')}" loading="lazy" onerror="this.parentNode.querySelector('.img-err').style.display='flex';this.style.display='none'"><div class="img-err carrusel-placeholder" style="display:none;height:220px"><span style="font-size:22px">⚠️</span><span style="font-size:12px">No se pudo cargar</span></div>${f.caption?`<div class="carrusel-caption">${htmlEscape(f.caption)}</div>`:''}</div>`).join('');
+  const dots=fotos.length>1?fotos.map((_,i)=>`<button class="carrusel-dot${i===0?' active':''}" onclick="irSlide('${idPremio}',${i})"></button>`).join(''):'';
+  const nav=fotos.length>1?`<button class="carrusel-btn carrusel-prev" onclick="prevSlide('${idPremio}')">‹</button><button class="carrusel-btn carrusel-next" onclick="nextSlide('${idPremio}')">›</button>`:'';
+  return `<div class="carrusel" id="car-${idPremio}" data-idx="0" data-total="${fotos.length}" data-autoplay="${premio.autoplay?'1':'0'}" data-vel="${Math.max(1,parseInt(premio.autoplayVel)||4)}" ontouchstart="carTouchStart(event,'${idPremio}')" ontouchend="carTouchEnd(event,'${idPremio}')"><div class="carrusel-track" id="car-track-${idPremio}">${slides}</div>${nav}</div>${dots?`<div class="carrusel-dots" id="car-dots-${idPremio}">${dots}</div>`:''}`;
+}
+
+let _carTouchX={},_carAutoIntervals={};
+function irSlide(pid,idx){const car=document.getElementById('car-'+pid);if(!car) return;const total=parseInt(car.dataset.total)||1;idx=((idx%total)+total)%total;car.dataset.idx=idx;const t=document.getElementById('car-track-'+pid);if(t) t.style.transform=`translateX(-${idx*100}%)`;const d=document.getElementById('car-dots-'+pid);if(d) d.querySelectorAll('.carrusel-dot').forEach((b,i)=>b.classList.toggle('active',i===idx));}
+function nextSlide(pid){const c=document.getElementById('car-'+pid);if(c) irSlide(pid,(parseInt(c.dataset.idx)||0)+1);}
+function prevSlide(pid){const c=document.getElementById('car-'+pid);if(c) irSlide(pid,(parseInt(c.dataset.idx)||0)-1);}
+function carTouchStart(e,pid){_carTouchX[pid]=e.touches[0].clientX;}
+function carTouchEnd(e,pid){const dx=e.changedTouches[0].clientX-(_carTouchX[pid]||0);if(Math.abs(dx)>48){dx<0?nextSlide(pid):prevSlide(pid);}}
+function iniciarAutoplayCarruseles(){Object.values(_carAutoIntervals).forEach(t=>clearInterval(t));_carAutoIntervals={};document.querySelectorAll('.carrusel[data-autoplay="1"]').forEach(car=>{const pid=car.id.replace('car-','');const vel=(parseInt(car.dataset.vel)||4)*1000;_carAutoIntervals[pid]=setInterval(()=>nextSlide(pid),vel);});}
+
+function renderPremiosPublico(){
+  const wrap=document.getElementById('premios-publico-wrap');
+  if(!wrap) return;
+  const visibles=(cfg.premios||[]).filter(p=>p.visible!==false);
+  if(!visibles.length){wrap.innerHTML=`<div class="card" style="text-align:center;padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">🏆</div><div style="font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:8px">Premios próximamente</div><p style="font-size:13px;color:var(--text-muted)">El organizador publicará los premios en breve.</p></div>`;return;}
+  const cardsHtml=visibles.map((p,idx)=>{
+    const bc=badgeClasePremio(idx);
+    const car=crearCarrusel(p,p.id);
+    const desc=p.descripcionModo==='html'?`<div class="premio-desc html-mode">${p.descripcion||''}</div>`:`<div class="premio-desc">${htmlEscape(p.descripcion||'').replace(/\n/g,'<br>')}</div>`;
+    return `<div class="premio-card">${car}<div class="premio-header"><span class="premio-badge ${bc}">${htmlEscape(p.etiqueta||'Premio')}</span>${p.valor?`<span class="premio-valor">${htmlEscape(p.valor)}</span>`:''}</div>${p.titulo?`<div class="premio-titulo">${htmlEscape(p.titulo)}</div>`:''}${desc}<button class="premio-cta" onclick="irABoletos()">${htmlEscape(p.ctaTexto||'🎟 Quiero participar')}</button></div>`;
+  }).join('');
+  wrap.innerHTML=`<div class="premios-grid">${cardsHtml}</div>`;
+  requestAnimationFrame(()=>iniciarAutoplayCarruseles());
+}
+
+function irABoletos(){showPage('publico');setTimeout(()=>document.getElementById('grid-boletos')?.scrollIntoView({behavior:'smooth',block:'start'}),120);}
+
+function renderPremiosAdmin(){
+  const lista=document.getElementById('premios-admin-lista');
+  if(!lista) return;
+  const premios=cfg.premios||[];
+  if(!premios.length){lista.innerHTML=`<div class="alert alert-info" style="font-size:12px">Sin premios. Presiona "Agregar premio" para crear el primero.</div>`;return;}
+  lista.innerHTML=premios.map((p,idx)=>buildPremioAdminCard(p,idx,premios.length)).join('');
+}
+
+function buildPremioAdminCard(p,idx,total){
+  const fotosHtml=(p.fotos||[]).map((f,fi)=>`<div class="foto-admin-item"><img src="${htmlEscape(normalizarUrlDrive(f.url))}" alt="${htmlEscape(f.caption||'')}" onerror="this.style.opacity='.25'"><button class="foto-admin-remove" onclick="quitarFotoPremio('${p.id}',${fi})">×</button></div>`).join('');
+  const puedeSubir=(p.fotos||[]).length<8;
+  const modoHtml=p.descripcionModo==='html';
+  return `<div class="premio-admin-card" id="padmin-${p.id}">
+    <div class="premio-admin-header">
+      <span class="premio-admin-titulo">${idx+1}. ${htmlEscape(p.etiqueta||'Premio')}${p.visible===false?' <span class="badge badge-gris" style="font-size:9px">Oculto</span>':''}</span>
+      <div class="premio-admin-btns">
+        ${idx>0?`<button class="btn btn-secondary btn-sm" onclick="moverPremio('${p.id}',-1)">↑</button>`:''}
+        ${idx<total-1?`<button class="btn btn-secondary btn-sm" onclick="moverPremio('${p.id}',1)">↓</button>`:''}
+        <button class="btn btn-secondary btn-sm" onclick="toggleVisiblePremio('${p.id}')">${p.visible===false?'👁 Mostrar':'🙈 Ocultar'}</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarPremio('${p.id}')">✕</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label>Etiqueta</label><input type="text" value="${htmlEscape(p.etiqueta||'')}" oninput="setPremioField('${p.id}','etiqueta',this.value)" placeholder="1er Lugar"></div>
+      <div><label>Título del premio</label><input type="text" value="${htmlEscape(p.titulo||'')}" oninput="setPremioField('${p.id}','titulo',this.value)" placeholder="Kit 10 paneles 550W"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Valor comercial</label><input type="text" value="${htmlEscape(p.valor||'')}" oninput="setPremioField('${p.id}','valor',this.value)" placeholder="$56,000 MXN"></div>
+      <div><label>Texto botón CTA</label><input type="text" value="${htmlEscape(p.ctaTexto||'')}" oninput="setPremioField('${p.id}','ctaTexto',this.value)"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Modo descripción</label>
+        <select onchange="setPremioField('${p.id}','descripcionModo',this.value);renderPremiosAdmin()">
+          <option value="simple"${modoHtml?'':' selected'}>Texto simple</option>
+          <option value="html"${modoHtml?' selected':''}>HTML personalizado</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:18px">
+        <label class="check-row" style="flex:1"><input type="checkbox" ${p.autoplay!==false?'checked':''} onchange="setPremioField('${p.id}','autoplay',this.checked)" style="width:auto;padding:0"><span>Autoplay</span></label>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted)">Vel:<input type="number" min="1" max="20" value="${p.autoplayVel||4}" style="width:50px" oninput="setPremioField('${p.id}','autoplayVel',parseInt(this.value)||4)">seg</div>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div><label>Descripción${modoHtml?' (HTML)':''}</label>
+        <textarea rows="4" placeholder="${modoHtml?'<strong>Especificaciones:</strong><ul><li>550W cada panel</li></ul>':'Características, especificaciones, condiciones...'}" oninput="setPremioField('${p.id}','descripcion',this.value)">${htmlEscape(p.descripcion||'')}</textarea>
+        ${modoHtml?`<div style="font-size:11px;color:var(--text-muted);margin-top:3px">Puedes usar &lt;strong&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;br&gt;, estilos inline, etc.</div>`:''}
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div style="font-size:12px;font-weight:700;font-family:var(--font-head);color:var(--text-muted);margin-bottom:8px">FOTOS (${(p.fotos||[]).length}/8)</div>
+    <div class="fotos-admin-grid">
+      ${fotosHtml}
+      ${puedeSubir?`<label class="foto-admin-add" title="Subir archivo">+<input type="file" accept="image/*" style="display:none" onchange="agregarFotoArchivo('${p.id}',this)"></label>`:''}
+    </div>
+    <div class="form-row" style="margin-top:10px">
+      <div>
+        <label>Agregar foto por URL (Google Drive u otra)</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="url-foto-${p.id}" placeholder="https://drive.google.com/file/d/... o URL directa">
+          <button class="btn btn-secondary btn-sm" style="white-space:nowrap" onclick="agregarFotoUrl('${p.id}')">+ URL</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Los links de Drive se convierten automáticamente al formato correcto.</div>
+      </div>
+      <div><label>Pie de foto (opcional)</label><input type="text" id="caption-foto-${p.id}" placeholder="Ej. Vista frontal del panel"></div>
+    </div>
+  </div>`;
+}
+
+function agregarPremio(){
+  if(!cfg.premios) cfg.premios=[];
+  if(cfg.premios.length>=10){setAlert('alert-premios','Máximo 10 premios.','warn');return;}
+  const nuevo=premioVacio();
+  const etiquetas=['1er Lugar','2do Lugar','3er Lugar','4to Lugar','5to Lugar','6to Lugar','7mo Lugar','8vo Lugar','9no Lugar','10mo Lugar'];
+  nuevo.etiqueta=etiquetas[cfg.premios.length]||`Premio ${cfg.premios.length+1}`;
+  cfg.premios.push(nuevo);
+  renderPremiosAdmin();
+  setAlert('alert-premios','Premio agregado. Completa los datos y guarda ajustes.','info');
+  setTimeout(()=>document.getElementById('padmin-'+nuevo.id)?.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+}
+
+function eliminarPremio(id){if(!confirm('¿Eliminar este premio?')) return;cfg.premios=(cfg.premios||[]).filter(p=>p.id!==id);renderPremiosAdmin();}
+function toggleVisiblePremio(id){const p=(cfg.premios||[]).find(p=>p.id===id);if(p){p.visible=!(p.visible!==false);renderPremiosAdmin();}}
+function moverPremio(id,dir){const arr=cfg.premios||[];const i=arr.findIndex(p=>p.id===id);if(i<0) return;const ni=i+dir;if(ni<0||ni>=arr.length) return;[arr[i],arr[ni]]=[arr[ni],arr[i]];renderPremiosAdmin();}
+function setPremioField(id,campo,valor){const p=(cfg.premios||[]).find(p=>p.id===id);if(p) p[campo]=valor;}
+
+function agregarFotoUrl(id){
+  const inp=document.getElementById('url-foto-'+id);
+  const capInp=document.getElementById('caption-foto-'+id);
+  if(!inp) return;
+  const url=inp.value.trim();
+  if(!url){setAlert('alert-premios','Ingresa una URL.','err');return;}
+  const p=(cfg.premios||[]).find(p=>p.id===id);
+  if(!p) return;
+  if((p.fotos||[]).length>=8){setAlert('alert-premios','Máximo 8 fotos.','warn');return;}
+  if(!p.fotos) p.fotos=[];
+  p.fotos.push({url,caption:capInp?capInp.value.trim():''});
+  inp.value='';if(capInp) capInp.value='';
+  renderPremiosAdmin();
+  setAlert('alert-premios','Foto agregada. Guarda ajustes para conservar.','ok');
+}
+
+function agregarFotoArchivo(id,input){
+  const file=input.files&&input.files[0];
+  if(!file||!file.type.startsWith('image/')){setAlert('alert-premios','Selecciona una imagen.','err');return;}
+  const p=(cfg.premios||[]).find(p=>p.id===id);
+  if(!p||(p.fotos||[]).length>=8){setAlert('alert-premios','Máximo 8 fotos.','warn');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{if(!p.fotos) p.fotos=[];p.fotos.push({url:e.target.result,caption:''});renderPremiosAdmin();setAlert('alert-premios','Foto cargada. Guarda ajustes.','ok');};
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function quitarFotoPremio(id,fi){const p=(cfg.premios||[]).find(p=>p.id===id);if(!p||!p.fotos) return;p.fotos.splice(fi,1);renderPremiosAdmin();}
+
+// ============================================================
 //  LOGIN / NAV
-// ==========================================
-function loginAdmin(){
-  if(document.getElementById('inp-pass').value===PASS_ADMIN){
+// ============================================================
+async function loginAdmin(){
+  const passInput=document.getElementById('inp-pass').value;
+  const hashIngresado=await hashPass(passInput);
+  if(hashIngresado===PASS_ADMIN_HASH){
     adminLogado=true;
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-panel').style.display='block';
     renderAdmin();
     cargarDesdeSheets({silencioso:true});
   } else setAlert('alert-login','Contraseña incorrecta.','err');
-}
-function logoutAdmin(){
-  adminLogado=false;
-  document.getElementById('admin-login').style.display='block';
-  document.getElementById('admin-panel').style.display='none';
   document.getElementById('inp-pass').value='';
 }
+
+function logoutAdmin(){ adminLogado=false; document.getElementById('admin-login').style.display='block'; document.getElementById('admin-panel').style.display='none'; document.getElementById('inp-pass').value=''; }
+
 function showPage(p){
-  ['publico','buscar','admin'].forEach(id=>{
-    document.getElementById('page-'+id).style.display=id===p?'block':'none';
-  });
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===['publico','buscar','admin'].indexOf(p)));
-  if(p==='publico'){
-    renderResultadoPublico();
-    // El anuncio debe mostrarse cada vez que se entra a la página pública, si está activo en Admin.
-    setTimeout(()=>mostrarPopup(false),250);
-  }
-}
-function setAlert(id,msg,type){
-  const el=document.getElementById(id);
-  if(!el) return;
-  if(!msg){el.innerHTML='';return;}
-  const cls={ok:'alert-ok',err:'alert-err',info:'alert-info',warn:'alert-warn'}[type]||'alert-info';
-  el.innerHTML=`<div class="alert ${cls}">${msg}</div>`;
+  ['publico','premios','buscar','admin'].forEach(id=>{document.getElementById('page-'+id).style.display=id===p?'block':'none';});
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===['publico','premios','buscar','admin'].indexOf(p)));
+  if(p==='publico'){renderResultadoPublico();setTimeout(()=>mostrarPopup(false),250);}
+  if(p==='premios'){renderPremiosPublico();}
 }
 
-// ==========================================
-//  ARRANQUE
-// ==========================================
-cargarEstado();
-initBoletos();
-actualizarCabecera();
-renderGrid();
-renderStats();
-renderResultadoPublico();
-actualizarMetodosPagoVisibles();
-setTimeout(()=>cargarDesdeSheets({silencioso:true}), 350);
-setTimeout(()=>mostrarPopup(false), 850);
-['cfg-promo-tipo','cfg-promo-desc-min','cfg-promo-desc-pct','cfg-promo-gratis-min','cfg-promo-gratis-cantidad'].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el){el.addEventListener('input',actualizarResumenPromoAdmin);el.addEventListener('change',actualizarResumenPromoAdmin);}
-});
+function setAlert(id,msg,type){ const el=document.getElementById(id); if(!el) return; if(!msg){el.innerHTML='';return;} const cls={ok:'alert-ok',err:'alert-err',info:'alert-info',warn:'alert-warn'}[type]||'alert-info'; el.innerHTML=`<div class="alert ${cls}">${msg}</div>`; }
+
+// ============================================================
+//  ARRANQUE ASYNC
+// ============================================================
+async function init(){
+  await cargarEstado();
+  initBoletos();
+  actualizarCabecera();  // Llama a iniciarContador() internamente
+  renderGrid();
+  renderStats();
+  renderResultadoPublico();
+  actualizarMetodosPagoVisibles();
+  setTimeout(()=>cargarDesdeSheets({silencioso:true}),350);
+  setTimeout(()=>mostrarPopup(false),850);
+  ['cfg-promo-tipo','cfg-promo-desc-min','cfg-promo-desc-pct','cfg-promo-gratis-min','cfg-promo-gratis-cantidad'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.addEventListener('input',actualizarResumenPromoAdmin);el.addEventListener('change',actualizarResumenPromoAdmin);}
+  });
+}
+
+init();
 </script>
 </body>
 </html>
