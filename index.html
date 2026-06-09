@@ -288,6 +288,21 @@ tr:hover td{background:var(--gray-50)}
 .foto-admin-remove{position:absolute;top:3px;right:3px;background:rgba(163,45,45,0.85);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;line-height:1}
 .foto-admin-add{width:100%;height:70px;border:1.5px dashed var(--gray-200);border-radius:var(--radius);background:transparent;color:var(--text-muted);cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s}
 .foto-admin-add:hover{border-color:var(--purple);color:var(--purple)}
+
+/* == MODAL CONFIRMACION DESTRUCTIVA == */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:400;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.confirm-box{background:var(--white);border-radius:var(--radius-lg);max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.3);overflow:hidden;animation:slideUp 0.3s ease}
+.confirm-box-head{background:var(--red-light);border-bottom:1px solid var(--red-mid);padding:16px 20px;display:flex;align-items:center;gap:10px}
+.confirm-box-icon{font-size:22px}
+.confirm-box-title{font-family:var(--font-head);font-size:15px;font-weight:800;color:var(--red)}
+.confirm-box-body{padding:16px 20px}
+.confirm-box-desc{font-size:13px;color:var(--text);margin-bottom:12px;line-height:1.5}
+.confirm-box-warn{background:var(--red-light);border:1px solid var(--red-mid);border-radius:var(--radius);padding:8px 12px;font-size:12px;color:var(--red);font-weight:600;margin-bottom:14px}
+.confirm-box-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:5px}
+.confirm-box-input{width:100%;padding:10px 12px;border:2px solid var(--red-mid);border-radius:var(--radius);font-size:14px;font-family:var(--font-body);transition:border-color 0.15s;background:var(--white)}
+.confirm-box-input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(163,45,45,0.12)}
+.confirm-box-foot{padding:12px 20px;display:flex;gap:8px;justify-content:flex-end;background:var(--gray-50);border-top:1px solid var(--gray-200)}
+.confirm-box-alert{font-size:12px;color:var(--red);margin-top:6px;min-height:16px;font-weight:600}
 </style>
 </head>
 <body>
@@ -409,6 +424,29 @@ tr:hover td{background:var(--gray-50)}
         <button class="btn btn-secondary btn-sm" onclick="imprimirBillete()">🖨️ Imprimir</button>
         <button class="btn btn-secondary btn-sm" onclick="cerrarBilleteDirecto()">Cerrar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- == MODAL CONFIRMACION DESTRUCTIVA == -->
+<div class="confirm-overlay" id="confirm-modal" style="display:none">
+  <div class="confirm-box">
+    <div class="confirm-box-head">
+      <span class="confirm-box-icon">⚠️</span>
+      <span class="confirm-box-title" id="confirm-title">Confirmar acción</span>
+    </div>
+    <div class="confirm-box-body">
+      <div class="confirm-box-desc" id="confirm-desc">Esta acción no se puede deshacer.</div>
+      <div class="confirm-box-warn" id="confirm-warn"></div>
+      <div class="confirm-box-label">Ingresa tu contraseña de Admin para confirmar</div>
+      <input type="password" class="confirm-box-input" id="confirm-pass"
+             placeholder="Contraseña del administrador"
+             onkeydown="if(event.key==='Enter') ejecutarConfirmacion()">
+      <div class="confirm-box-alert" id="confirm-alert"></div>
+    </div>
+    <div class="confirm-box-foot">
+      <button class="btn btn-secondary btn-sm" onclick="cerrarConfirmModal()">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="confirm-exec-btn" onclick="ejecutarConfirmacion()">Confirmar y ejecutar</button>
     </div>
   </div>
 </div>
@@ -1447,8 +1485,100 @@ function bloquearBoleto(){ const n=document.getElementById('inp-bloqueo-num').va
 function desbloquearBoleto(){ const n=document.getElementById('inp-bloqueo-num').value.trim().padStart(cfg.digitos,'0'); if(!bloqueados.has(n)){setAlert('alert-bloqueo','Ese boleto no está bloqueado.','err');return;} bloqueados.delete(n);guardarEstado();renderGrid();renderAdmin();setAlert('alert-bloqueo',`Boleto ${n} restaurado.`,'ok');enviarSheets({accion:'desbloqueo',boleto:n,fecha:new Date().toLocaleString('es-MX')}); }
 function desbloquearEspecifico(k){ bloqueados.delete(k);guardarEstado();renderGrid();renderAdmin();enviarSheets({accion:'desbloqueo',boleto:k,fecha:new Date().toLocaleString('es-MX')}); }
 function eliminarVenta(k){ if(!confirm(`¿Liberar el boleto ${k}?`)) return; boletos[k]=boletoVacio();guardarEstado();renderGrid();renderStats();renderAdmin();enviarSheets({accion:'cancelacion',boleto:k,fecha:new Date().toLocaleString('es-MX')});setAlert('alert-mantenimiento',`✅ Boleto ${k} liberado.`,'ok'); }
-function liberarPendientes(){ const p=Object.entries(boletos).filter(([,b])=>b.estado==='vendido'&&!b.pagado); if(!p.length){setAlert('alert-mantenimiento','No hay pendientes.','info');return;} if(!confirm(`¿Liberar ${p.length} boleto(s) pendiente(s)?`)) return; p.forEach(([k])=>{boletos[k]=boletoVacio();}); guardarEstado();renderGrid();renderStats();renderAdmin();enviarSheets({accion:'liberar_pendientes',fecha:new Date().toLocaleString('es-MX'),cantidad:p.length});setAlert('alert-mantenimiento',`✅ Se liberaron ${p.length} boleto(s).`,'ok'); }
-function reestablecerBoletosACero(){ const v=Object.values(boletos).filter(b=>b.estado==='vendido').length; const b=bloqueados.size; if(!v&&!b&&(!cfg.ganadores||!cfg.ganadores.length)){setAlert('alert-mantenimiento','El sorteo ya está en ceros.','info');return;} if(!confirm(`Liberar ${v} vendido(s) y ${b} bloqueado(s). ¿Continuar?`)) return; if(prompt('Para confirmar escribe REINICIAR')!=='REINICIAR'){setAlert('alert-mantenimiento','Cancelado.','warn');return;} boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();cfg.ganadores=[];initBoletos();guardarEstado();renderGrid();renderStats();renderAdmin();enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')});setAlert('alert-mantenimiento','✅ Reestablecido a ceros.','ok'); }
+function liberarPendientes(){
+  const p=Object.entries(boletos).filter(([,b])=>b.estado==='vendido'&&!b.pagado);
+  if(!p.length){setAlert('alert-mantenimiento','No hay pendientes.','info');return;}
+  mostrarConfirmModal({
+    title:'Liberar boletos pendientes',
+    desc:`Se cancelarán ${p.length} boleto(s) pendiente(s) de pago. Sus números volverán a estar disponibles.`,
+    warn:`${p.length} boleto(s) perderán su reserva permanentemente.`,
+    btnLabel:'Sí, liberar pendientes',
+    accion: async ()=>{
+      p.forEach(([k])=>{boletos[k]=boletoVacio();});
+      guardarEstado();renderGrid();renderStats();renderAdmin();
+      enviarSheets({accion:'liberar_pendientes',fecha:new Date().toLocaleString('es-MX'),cantidad:p.length});
+      setAlert('alert-mantenimiento',`✅ Se liberaron ${p.length} boleto(s).`,'ok');
+    }
+  });
+}
+
+function reestablecerBoletosACero(){
+  const v=Object.values(boletos).filter(b=>b.estado==='vendido').length;
+  const b=bloqueados.size;
+  if(!v&&!b&&(!cfg.ganadores||!cfg.ganadores.length)){setAlert('alert-mantenimiento','El sorteo ya está en ceros.','info');return;}
+  mostrarConfirmModal({
+    title:'Reestablecer boletos a ceros',
+    desc:`Se borrarán TODOS los boletos vendidos (${v}) y bloqueados (${b}). La configuración del sorteo, los premios y los datos bancarios se conservarán.`,
+    warn:`Esta acción borrará ${v} venta(s) activa(s). No se puede deshacer.`,
+    btnLabel:'Sí, reestablecer a ceros',
+    accion: async ()=>{
+      boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};limpiarPromoGratis();cfg.ganadores=[];
+      initBoletos();guardarEstado();renderGrid();renderStats();renderAdmin();
+      enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX'),motivo:'Reestablecer boletos a ceros'});
+      setAlert('alert-mantenimiento','✅ Reestablecido a ceros. Configuración conservada.','ok');
+    }
+  });
+}
+
+function reiniciarTodo(){
+  mostrarConfirmModal({
+    title:'⚠️ Reiniciar TODO el sistema',
+    desc:'Se borrará ABSOLUTAMENTE TODO: boletos vendidos, configuración, datos bancarios, premios, contraseña. El sistema quedará como recién instalado.',
+    warn:'⚠️ ESTA ACCIÓN NO TIENE VUELTA ATRÁS. Se perderán todos los datos incluyendo premios y configuración.',
+    btnLabel:'Sí, borrar todo',
+    peligro: true,
+    accion: async ()=>{
+      const url=cfg.sheetsUrl;
+      if(url) await enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX'),motivo:'Reinicio total del sistema'});
+      boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];cfg.premios=[];
+      localStorage.clear();
+      initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();
+      setAlert('alert-cfg','Todo reiniciado. El sistema está en estado de fábrica.','warn');
+    }
+  });
+}
+
+// ── Modal de confirmación con contraseña ─────────────────────
+let _confirmPendiente = null;
+
+function mostrarConfirmModal({title, desc, warn, btnLabel, accion, peligro=false}){
+  _confirmPendiente = accion;
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-desc').textContent = desc;
+  document.getElementById('confirm-warn').textContent = warn;
+  document.getElementById('confirm-pass').value = '';
+  document.getElementById('confirm-alert').textContent = '';
+  const btn = document.getElementById('confirm-exec-btn');
+  btn.textContent = btnLabel || 'Confirmar y ejecutar';
+  btn.style.background = peligro ? 'var(--red)' : '';
+  btn.style.color = peligro ? '#fff' : '';
+  btn.style.border = peligro ? 'none' : '';
+  document.getElementById('confirm-modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('confirm-pass').focus(), 100);
+}
+
+async function ejecutarConfirmacion(){
+  const passInput = document.getElementById('confirm-pass').value;
+  const alertEl = document.getElementById('confirm-alert');
+  if(!passInput){ alertEl.textContent = 'Ingresa tu contraseña de Admin.'; return; }
+  const hashIngresado = await hashPass(passInput);
+  if(hashIngresado !== PASS_ADMIN_HASH){
+    alertEl.textContent = '❌ Contraseña incorrecta. Acción cancelada.';
+    document.getElementById('confirm-pass').value = '';
+    document.getElementById('confirm-pass').focus();
+    return;
+  }
+  cerrarConfirmModal();
+  if(_confirmPendiente) await _confirmPendiente();
+  _confirmPendiente = null;
+}
+
+function cerrarConfirmModal(){
+  document.getElementById('confirm-modal').style.display = 'none';
+  document.getElementById('confirm-pass').value = '';
+  document.getElementById('confirm-alert').textContent = '';
+  _confirmPendiente = null;
+}
 
 // ============================================================
 //  SHEETS — envío estándar (sin esperar respuesta)
@@ -1543,7 +1673,6 @@ async function cargarDesdeSheets(opts={}){ if(!cfg.sheetsUrl){if(adminLogado&&!o
 
 async function probarSheets(){ if(!cfg.sheetsUrl){setAlert('alert-cfg','Ingresa la URL primero.','err');return;} setAlert('alert-cfg','⏳ Probando...','info'); await enviarSheets({accion:'test',fecha:new Date().toLocaleString('es-MX')}); setAlert('alert-cfg','✅ Prueba enviada. Cargando estado...','ok'); setTimeout(()=>cargarDesdeSheets({silencioso:false}),900); }
 function abrirPruebaPing(){ const u=(cfg.sheetsUrl||'').trim(); if(!u){setAlert('alert-cfg','Primero pega la URL.','err');return;} window.open(u+(u.includes('?')?'&':'?')+'accion=ping','_blank'); setAlert('alert-cfg','Ping abierto en otra pestaña.','info'); }
-function reiniciarTodo(){ if(!confirm('⚠️ ¿Reiniciar TODOS los boletos, ventas y configuración?')) return; const url=cfg.sheetsUrl; if(url) enviarSheets({accion:'reset_total',fecha:new Date().toLocaleString('es-MX')}); boletos={};bloqueados=new Set();seleccionados=[];numerosAsignadosPorBoleto={};cfg.ganadores=[];localStorage.clear();initBoletos();actualizarCabecera();renderGrid();renderStats();renderResultadoPublico();renderAdmin();setAlert('alert-cfg','Todo reiniciado.','warn'); }
 
 // ============================================================
 //  CSV
